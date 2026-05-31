@@ -50,7 +50,7 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}
+
           script: |
             set -e
             mkdir -p /opt/asy-syifaa/app/dist
@@ -63,7 +63,7 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}
+
           source: "asy-syifaa-app/pwa/dist/*"
           target: "/opt/asy-syifaa/app/"
           strip_components: 3
@@ -74,7 +74,7 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}
+
           script: |
             FILE_COUNT=$(find /opt/asy-syifaa/app/dist -type f | wc -l)
             echo "==> PWA deploy complete! ($FILE_COUNT files deployed)"
