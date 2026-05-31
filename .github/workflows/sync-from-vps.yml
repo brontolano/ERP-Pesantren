@@ -1,0 +1,68 @@
+name: Sync ERP Code from VPS
+
+on:
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download code from VPS
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+
+          echo "==> Downloading app/ directory..."
+          scp -r -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/opt/asy-syifaa/erp/src/app asy-syifaa-erp/
+
+          echo "==> Downloading config/ directory..."
+          scp -r -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/opt/asy-syifaa/erp/src/config asy-syifaa-erp/
+
+          echo "==> Downloading database/ directory..."
+          scp -r -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/opt/asy-syifaa/erp/src/database asy-syifaa-erp/
+
+          echo "==> Downloading bootstrap/ directory..."
+          scp -r -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/opt/asy-syifaa/erp/src/bootstrap asy-syifaa-erp/
+
+          echo "==> Downloading other files..."
+          scp -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/opt/asy-syifaa/erp/src/artisan asy-syifaa-erp/ || true
+          scp -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/opt/asy-syifaa/erp/src/composer.json asy-syifaa-erp/ || true
+          scp -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/opt/asy-syifaa/erp/src/composer.lock asy-syifaa-erp/ || true
+          scp -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/opt/asy-syifaa/erp/src/package.json asy-syifaa-erp/ || true
+          scp -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/opt/asy-syifaa/erp/src/package-lock.json asy-syifaa-erp/ || true
+          scp -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/opt/asy-syifaa/erp/src/phpunit.xml asy-syifaa-erp/ || true
+          scp -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/opt/asy-syifaa/erp/src/.gitignore asy-syifaa-erp/ || true
+          scp -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/opt/asy-syifaa/erp/src/.env.example asy-syifaa-erp/ || true
+          scp -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/opt/asy-syifaa/erp/src/ARCHITECTURE.md asy-syifaa-erp/ || true
+          scp -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/opt/asy-syifaa/erp/src/CHANGELOG.md asy-syifaa-erp/ || true
+          scp -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/opt/asy-syifaa/erp/src/PROGRESS.md asy-syifaa-erp/ || true
+
+          echo "==> Downloading Docker files..."
+          scp -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/opt/asy-syifaa/erp/Dockerfile asy-syifaa-erp/ || true
+          scp -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/opt/asy-syifaa/erp/docker-compose.yml asy-syifaa-erp/ || true
+          scp -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/opt/asy-syifaa/erp/nginx.conf asy-syifaa-erp/ || true
+
+          rm -f ~/.ssh/id_ed25519
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add asy-syifaa-erp/
+          git status
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore(erp): sync full source code from VPS
+
+            Pulls app/, config/, database/, bootstrap/ and Docker files
+            that were previously only on the VPS server.
+
+            Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
+            git push origin main
+          fi
