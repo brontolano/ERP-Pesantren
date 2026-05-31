@@ -823,6 +823,25 @@ header('Expires: 0');
                   `kepala_keluarga:${fd.get("kepala_keluarga") || "-"}`
               ].join(" | ");
 
+              const alamatJalan = String(fd.get("alamat_jalan") || "").trim();
+              const rt = String(fd.get("rt") || "").trim();
+              const rw = String(fd.get("rw") || "").trim();
+              const desa = String(document.getElementById("wDesa")?.selectedOptions?.[0]?.text || "").trim();
+              const kecamatan = String(document.getElementById("wKecamatan")?.selectedOptions?.[0]?.text || "").trim();
+              const kabKota = String(document.getElementById("wKota")?.selectedOptions?.[0]?.text || "").trim();
+              const provinsi = String(document.getElementById("wProvinsi")?.selectedOptions?.[0]?.text || "").trim();
+              const kodePos = String(fd.get("kode_pos") || "").trim();
+              const rtRw = (rt || rw) ? `RT ${rt || "-"} / RW ${rw || "-"}` : "";
+              const addressDetail = [
+                  alamatJalan,
+                  rtRw,
+                  desa,
+                  kecamatan,
+                  kabKota,
+                  provinsi,
+                  kodePos
+              ].filter(Boolean).join(", ");
+
               const jk = String(fd.get("jenis_kelamin") || "").toLowerCase();
               const gender = jk.startsWith("p") ? "P" : "L";
               const tahun = new Date().getFullYear();
@@ -836,7 +855,7 @@ header('Expires: 0');
                   birth_place: String(fd.get("tempat_lahir") || "").trim() || null,
                   birth_date: String(fd.get("tgl_lahir") || "").trim() || null,
                   origin_school: String(fd.get("pendidikan_terakhir") || "").trim() || null,
-                  address: String(fd.get("alamat_jalan") || "").trim() || null,
+                  address: addressDetail || null,
                   village_code: String(fd.get("village_code") || "").trim() || null,
                   parent_name: [namaAyah, namaIbu].filter(Boolean).join(" / ") || null,
                   parent_phone: guardianPhone,

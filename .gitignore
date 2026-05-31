@@ -40,6 +40,20 @@ asy-syifaa-app/pwa/.env.local
 # ── Website (asy-syifaa-platform / asy-syifaa-website) ─────────
 asy-syifaa-platform/.env
 asy-syifaa-website/.env
+asy-syifaa-platform/assets/img/
+asy-syifaa-platform/assets/video/
+asy-syifaa-platform/assets/media/
+asy-syifaa-platform/img/
+asy-syifaa-platform/Galeri/
+asy-syifaa-platform/Abuya/
+asy-syifaa-platform/images/
+asy-syifaa-website/assets/img/
+asy-syifaa-website/assets/video/
+asy-syifaa-website/assets/media/
+asy-syifaa-website/img/
+asy-syifaa-website/Galeri/
+asy-syifaa-website/Abuya/
+asy-syifaa-website/images/
 
 # ── OS & IDE ───────────────────────────────────────────────────
 .DS_Store

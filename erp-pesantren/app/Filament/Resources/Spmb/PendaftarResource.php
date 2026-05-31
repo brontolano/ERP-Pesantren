@@ -92,6 +92,17 @@ class PendaftarResource extends Resource
                                     ->label('RW')
                                     ->maxLength(5),
                                 ...\App\Filament\Forms\Components\WilayahSelect::make(),
+                                // Backward compatibility untuk flow lama yang masih membaca kolom `address`.
+                                Forms\Components\Hidden::make('address')
+                                    ->dehydrateStateUsing(fn (callable $get) => trim(implode(', ', array_filter([
+                                        $get('alamat_jalan'),
+                                        trim('RT ' . ($get('rt') ?? '') . '/RW ' . ($get('rw') ?? '')),
+                                        $get('desa_kelurahan'),
+                                        $get('kecamatan'),
+                                        $get('kab_kota'),
+                                        $get('provinsi'),
+                                        $get('kode_pos'),
+                                    ])))),
                             ])
                             ->columns(3),
 
