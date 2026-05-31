@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - 'asy-syifaa-platform/**'
+      - 'asy-syifaa-website/**'
 
 jobs:
   deploy:
@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          sparse-checkout: asy-syifaa-platform
+          sparse-checkout: asy-syifaa-website
 
       - name: Deploy to Hostinger via SSH
         uses: appleboy/ssh-action@v1
@@ -23,5 +23,5 @@ jobs:
           port: ${{ secrets.HOSTINGER_PORT }}
           script: |
             cd ~/public_html
-            git pull origin main -- asy-syifaa-platform/
-            cp -r asy-syifaa-platform/* .
+            git pull origin main -- asy-syifaa-website/
+            cp -r asy-syifaa-website/* .
