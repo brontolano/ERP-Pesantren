@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - 'asy-syifaa-api/**'
+      - 'asy-syifaa-api'
   workflow_dispatch:
 
 concurrency:
@@ -27,22 +27,7 @@ jobs:
             exit 1
           fi
 
-      - uses: actions/checkout@v4
-        with:
-          sparse-checkout: asy-syifaa-api
-
-      - name: Deploy API files to VPS
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          source: "asy-syifaa-api/*"
-          target: "/opt/asy-syifaa/backend/"
-          strip_components: 1
-          overwrite: true
-
-      - name: Run post-deploy commands
+      - name: Deploy API via git pull on VPS
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -52,6 +37,8 @@ jobs:
           script: |
             set -e
             cd /opt/asy-syifaa/backend
+            echo "==> Pulling latest changes..."
+            git pull origin main
             echo "==> Installing dependencies..."
             npm ci --omit=dev
             if [ -f prisma/schema.prisma ]; then
