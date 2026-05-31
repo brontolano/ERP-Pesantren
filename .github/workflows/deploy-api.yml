@@ -5,16 +5,27 @@ on:
     branches: [main]
     paths:
       - 'asy-syifaa-api/**'
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-api
+  cancel-in-progress: false
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Validate required secrets
         run: |
-          test -n "${{ secrets.VPS_HOST }}" || (echo "Missing secret: VPS_HOST" && exit 1)
-          test -n "${{ secrets.VPS_USER }}" || (echo "Missing secret: VPS_USER" && exit 1)
-          test -n "${{ secrets.VPS_SSH_KEY }}" || (echo "Missing secret: VPS_SSH_KEY" && exit 1)
+          missing=""
+          [ -z "${{ secrets.VPS_HOST }}" ] && missing="$missing VPS_HOST"
+          [ -z "${{ secrets.VPS_USER }}" ] && missing="$missing VPS_USER"
+          [ -z "${{ secrets.VPS_SSH_KEY }}" ] && missing="$missing VPS_SSH_KEY"
+          if [ -n "$missing" ]; then
+            echo "::error::Missing secrets:$missing"
+            exit 1
+          fi
 
       - name: Deploy API to VPS
         uses: appleboy/ssh-action@v1
@@ -23,20 +34,28 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}
+          command_timeout: 5m
           script: |
             set -e
             cd /opt/asy-syifaa/api
+            echo "==> Pulling latest changes..."
             git pull origin main
+            echo "==> Installing dependencies..."
             npm ci --omit=dev
             if [ -f prisma/schema.prisma ]; then
+              echo "==> Running database migrations..."
               npx prisma migrate deploy
             fi
+            echo "==> Restarting API service..."
             if command -v pm2 >/dev/null 2>&1; then
               pm2 restart asy-syifaa-api || pm2 restart ecosystem.config.js --only asy-syifaa-api
             elif command -v docker >/dev/null 2>&1; then
               docker compose up -d --build
             else
-              echo "No process manager found (pm2/docker)."
+              echo "::error::No process manager found (pm2/docker)"
               exit 1
             fi
-            curl -fsS http://127.0.0.1:3100/api/health
+            echo "==> Checking health endpoint..."
+            sleep 3
+            curl -fsS http://127.0.0.1:3100/api/health || (echo "::error::Health check failed!" && exit 1)
+            echo "==> API deploy complete!"

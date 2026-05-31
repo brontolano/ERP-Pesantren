@@ -5,16 +5,27 @@ on:
     branches: [main]
     paths:
       - 'asy-syifaa-erp/**'
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-erp
+  cancel-in-progress: false
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Validate required secrets
         run: |
-          test -n "${{ secrets.VPS_HOST }}" || (echo "Missing secret: VPS_HOST" && exit 1)
-          test -n "${{ secrets.VPS_USER }}" || (echo "Missing secret: VPS_USER" && exit 1)
-          test -n "${{ secrets.VPS_SSH_KEY }}" || (echo "Missing secret: VPS_SSH_KEY" && exit 1)
+          missing=""
+          [ -z "${{ secrets.VPS_HOST }}" ] && missing="$missing VPS_HOST"
+          [ -z "${{ secrets.VPS_USER }}" ] && missing="$missing VPS_USER"
+          [ -z "${{ secrets.VPS_SSH_KEY }}" ] && missing="$missing VPS_SSH_KEY"
+          if [ -n "$missing" ]; then
+            echo "::error::Missing secrets:$missing"
+            exit 1
+          fi
 
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v1
@@ -23,12 +34,20 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}
+          command_timeout: 5m
           script: |
+            set -e
             cd /opt/asy-syifaa/erp/src
+            echo "==> Pulling latest changes..."
             git pull origin main
+            echo "==> Installing dependencies..."
             docker compose exec -T app composer install --no-interaction --no-dev --optimize-autoloader
+            echo "==> Running migrations..."
             docker compose exec -T app php artisan migrate --force
+            echo "==> Caching config/routes/views..."
             docker compose exec -T app php artisan config:cache
             docker compose exec -T app php artisan route:cache
             docker compose exec -T app php artisan view:cache
+            echo "==> Restarting queue workers..."
             docker compose exec -T app php artisan queue:restart
+            echo "==> ERP deploy complete!"

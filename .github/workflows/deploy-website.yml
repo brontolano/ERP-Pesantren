@@ -5,23 +5,47 @@ on:
     branches: [main]
     paths:
       - 'asy-syifaa-website/**'
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-website
+  cancel-in-progress: true
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Validate required secrets
         run: |
-          test -n "${{ secrets.HOSTINGER_HOST }}" || (echo "Missing secret: HOSTINGER_HOST" && exit 1)
-          test -n "${{ secrets.HOSTINGER_USER }}" || (echo "Missing secret: HOSTINGER_USER" && exit 1)
-          test -n "${{ secrets.HOSTINGER_SSH_KEY }}" || (echo "Missing secret: HOSTINGER_SSH_KEY" && exit 1)
-          test -n "${{ secrets.HOSTINGER_PORT }}" || (echo "Missing secret: HOSTINGER_PORT" && exit 1)
+          missing=""
+          [ -z "${{ secrets.HOSTINGER_HOST }}" ] && missing="$missing HOSTINGER_HOST"
+          [ -z "${{ secrets.HOSTINGER_USER }}" ] && missing="$missing HOSTINGER_USER"
+          [ -z "${{ secrets.HOSTINGER_SSH_KEY }}" ] && missing="$missing HOSTINGER_SSH_KEY"
+          [ -z "${{ secrets.HOSTINGER_PORT }}" ] && missing="$missing HOSTINGER_PORT"
+          if [ -n "$missing" ]; then
+            echo "::error::Missing secrets:$missing"
+            exit 1
+          fi
 
       - uses: actions/checkout@v4
         with:
           sparse-checkout: asy-syifaa-website
 
-      - name: Deploy to Hostinger via SSH
+      - name: Deploy to Hostinger via SCP
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.HOSTINGER_HOST }}
+          username: ${{ secrets.HOSTINGER_USER }}
+          key: ${{ secrets.HOSTINGER_SSH_KEY }}
+          passphrase: ${{ secrets.HOSTINGER_SSH_PASSPHRASE }}
+          port: ${{ secrets.HOSTINGER_PORT }}
+          source: "asy-syifaa-website/*"
+          target: ${{ secrets.HOSTINGER_DEPLOY_PATH || 'public_html' }}
+          strip_components: 1
+          overwrite: true
+
+      - name: Verify deployment
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.HOSTINGER_HOST }}
@@ -30,15 +54,9 @@ jobs:
           passphrase: ${{ secrets.HOSTINGER_SSH_PASSPHRASE }}
           port: ${{ secrets.HOSTINGER_PORT }}
           script: |
-            if [ -d /opt/asy-syifaa/website/src ]; then
-              TARGET_DIR=/opt/asy-syifaa/website/src
-            elif [ -d ~/public_html ]; then
-              TARGET_DIR=~/public_html
+            TARGET="${HOSTINGER_DEPLOY_PATH:-$HOME/public_html}"
+            if [ -f "$TARGET/index.php" ] || [ -f "$TARGET/index.html" ]; then
+              echo "==> Website deploy complete!"
             else
-              echo "No valid website target directory found."
-              exit 1
+              echo "==> Warning: No index file found at $TARGET"
             fi
-
-            cd "$TARGET_DIR"
-            git pull origin main -- asy-syifaa-website/
-            cp -r asy-syifaa-website/* .

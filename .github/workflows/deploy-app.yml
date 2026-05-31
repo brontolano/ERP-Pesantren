@@ -5,18 +5,31 @@ on:
     branches: [main]
     paths:
       - 'asy-syifaa-app/**'
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-app
+  cancel-in-progress: true
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Validate required secrets
         run: |
-          test -n "${{ secrets.VPS_HOST }}" || (echo "Missing secret: VPS_HOST" && exit 1)
-          test -n "${{ secrets.VPS_USER }}" || (echo "Missing secret: VPS_USER" && exit 1)
-          test -n "${{ secrets.VPS_SSH_KEY }}" || (echo "Missing secret: VPS_SSH_KEY" && exit 1)
+          missing=""
+          [ -z "${{ secrets.VPS_HOST }}" ] && missing="$missing VPS_HOST"
+          [ -z "${{ secrets.VPS_USER }}" ] && missing="$missing VPS_USER"
+          [ -z "${{ secrets.VPS_SSH_KEY }}" ] && missing="$missing VPS_SSH_KEY"
+          if [ -n "$missing" ]; then
+            echo "::error::Missing secrets:$missing"
+            exit 1
+          fi
 
       - uses: actions/checkout@v4
+        with:
+          sparse-checkout: asy-syifaa-app
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -31,8 +44,7 @@ jobs:
           npm ci
           npm run build
 
-      - name: Deploy to VPS
-        if: ${{ success() }}
+      - name: Clear old files on VPS
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -40,10 +52,12 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}
           script: |
+            set -e
+            mkdir -p /opt/asy-syifaa/app/dist
             rm -rf /opt/asy-syifaa/app/dist/*
+            echo "==> Old files cleared"
 
-      - name: Copy build files
-        if: ${{ success() }}
+      - name: Copy build files to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -53,3 +67,15 @@ jobs:
           source: "asy-syifaa-app/pwa/dist/*"
           target: "/opt/asy-syifaa/app/"
           strip_components: 3
+
+      - name: Verify deployment
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}
+          script: |
+            FILE_COUNT=$(find /opt/asy-syifaa/app/dist -type f | wc -l)
+            echo "==> PWA deploy complete! ($FILE_COUNT files deployed)"
+            [ "$FILE_COUNT" -gt 0 ] || (echo "::error::No files deployed!" && exit 1)
