@@ -1,0 +1,31 @@
+name: Pull ERP Code from VPS
+
+on:
+  workflow_dispatch:
+
+jobs:
+  pull:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Get ERP source structure from VPS
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            echo "=== ERP SRC ==="
+            ls -la /opt/asy-syifaa/erp/src/
+            echo "=== APP DIR ==="
+            find /opt/asy-syifaa/erp/src/app -type f -name "*.php" 2>/dev/null | sort
+            echo "=== CONFIG DIR ==="
+            ls /opt/asy-syifaa/erp/src/config/ 2>/dev/null
+            echo "=== DATABASE DIR ==="
+            find /opt/asy-syifaa/erp/src/database -type f -name "*.php" 2>/dev/null | sort
+            echo "=== BOOTSTRAP ==="
+            ls /opt/asy-syifaa/erp/src/bootstrap/ 2>/dev/null
+            echo "=== DOCKER ==="
+            ls /opt/asy-syifaa/erp/ 2>/dev/null
+            echo "=== .ENV keys ==="
+            grep -oP '^[A-Z_]+=' /opt/asy-syifaa/erp/src/.env 2>/dev/null || echo "no .env"
