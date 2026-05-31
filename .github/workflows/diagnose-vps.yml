@@ -1,0 +1,43 @@
+name: Diagnose VPS
+
+on:
+  workflow_dispatch:
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Inspect VPS
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            echo "=== HOSTNAME ==="
+            hostname
+            echo "=== WHOAMI ==="
+            whoami
+            echo "=== /opt/ ==="
+            ls -la /opt/ 2>/dev/null || echo "no /opt"
+            echo "=== /opt/asy-syifaa/ ==="
+            ls -la /opt/asy-syifaa/ 2>/dev/null || echo "no /opt/asy-syifaa"
+            echo "=== /var/www/ ==="
+            ls -la /var/www/ 2>/dev/null || echo "no /var/www"
+            echo "=== /var/www/html/ ==="
+            ls -la /var/www/html/ 2>/dev/null | head -15 || echo "no /var/www/html"
+            echo "=== GIT REPOS ==="
+            find / -maxdepth 4 -name '.git' -type d 2>/dev/null || true
+            echo "=== DOCKER ==="
+            docker ps 2>/dev/null || echo "no docker"
+            echo "=== PM2 ==="
+            pm2 list 2>/dev/null || echo "no pm2"
+            echo "=== NODE ==="
+            node --version 2>/dev/null || echo "no node"
+            echo "=== PHP ==="
+            php --version 2>/dev/null || echo "no php"
+            echo "=== NGINX SITES ==="
+            ls /etc/nginx/sites-enabled/ 2>/dev/null || ls /etc/nginx/conf.d/ 2>/dev/null || echo "no nginx config"
+            echo "=== DISK ==="
+            df -h / 2>/dev/null
