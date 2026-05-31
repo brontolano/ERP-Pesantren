@@ -1,0 +1,13 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.asysyifaa.app",
+      "sha256_cert_fingerprints": [
+        "5F:AA:05:CA:7C:FC:3B:2F:BF:78:C8:2D:CF:A5:E3:6E:34:C2:C6:F6:96:E6:72:1A:EF:6F:FD:31:FC:43:B3:FB",
+        "REPLACE_WITH_PLAY_APP_SIGNING_SHA256_FINGERPRINT"
+      ]
+    }
+  }
+]

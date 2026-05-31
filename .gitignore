@@ -1,0 +1,60 @@
+# ── Arsip & Backup (tidak di-track) ────────────────────────────
+arsip_project/
+RENAME_FOLDERS.bat
+
+# ── Laravel (asy-syifaa-erp) ───────────────────────────────────
+erp-pesantren/vendor/
+erp-pesantren/node_modules/
+erp-pesantren/.env
+erp-pesantren/storage/*.key
+erp-pesantren/storage/logs/
+erp-pesantren/storage/framework/cache/data/
+erp-pesantren/storage/framework/sessions/
+erp-pesantren/storage/framework/views/
+erp-pesantren/storage/app/public/
+erp-pesantren/bootstrap/cache/
+erp-pesantren/public/hot
+erp-pesantren/public/storage
+erp-pesantren/public/build/
+
+asy-syifaa-erp/vendor/
+asy-syifaa-erp/node_modules/
+asy-syifaa-erp/.env
+asy-syifaa-erp/storage/*.key
+asy-syifaa-erp/storage/logs/
+asy-syifaa-erp/storage/framework/cache/data/
+asy-syifaa-erp/storage/framework/sessions/
+asy-syifaa-erp/storage/framework/views/
+asy-syifaa-erp/storage/app/public/
+asy-syifaa-erp/bootstrap/cache/
+asy-syifaa-erp/public/hot
+asy-syifaa-erp/public/storage
+asy-syifaa-erp/public/build/
+
+# ── PWA App (asy-syifaa-app) ───────────────────────────────────
+asy-syifaa-app/pwa/node_modules/
+asy-syifaa-app/pwa/dist/
+asy-syifaa-app/pwa/.env
+asy-syifaa-app/pwa/.env.local
+
+# ── Website (asy-syifaa-platform / asy-syifaa-website) ─────────
+asy-syifaa-platform/.env
+asy-syifaa-website/.env
+
+# ── OS & IDE ───────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo
+.idea/
+.vscode/
+*.sublime-*
+
+# ── Claude Code ────────────────────────────────────────────────
+.claude/
+
+# ── Misc ───────────────────────────────────────────────────────
+*.log
+*.cache
+.phpunit.result.cache

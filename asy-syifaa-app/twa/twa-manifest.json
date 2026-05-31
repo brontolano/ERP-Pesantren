@@ -1,0 +1,62 @@
+{
+  "packageId": "com.asysyifaa.app",
+  "host": "app.asy-syifaa.com",
+  "name": "Asy-Syifaa — Pantau Santri Anda",
+  "launcherName": "Asy-Syifaa",
+  "display": "standalone",
+  "themeColor": "#1f6b43",
+  "themeColorDark": "#0f3a24",
+  "navigationColor": "#1f6b43",
+  "navigationColorDark": "#0f3a24",
+  "navigationDividerColor": "#1f6b43",
+  "navigationDividerColorDark": "#0f3a24",
+  "backgroundColor": "#f0fdf4",
+  "enableNotifications": true,
+  "startUrl": "/",
+  "iconUrl": "https://app.asy-syifaa.com/icons/icon-512x512.png",
+  "maskableIconUrl": "https://app.asy-syifaa.com/icons/maskable-512.png",
+  "monochromeIconUrl": "https://app.asy-syifaa.com/icons/maskable-512.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "./android.keystore",
+    "alias": "asysyifaa"
+  },
+  "appVersionName": "1.0.0",
+  "appVersionCode": 1,
+  "shortcuts": [
+    {
+      "name": "Status Hari Ini",
+      "shortName": "Status",
+      "url": "/dashboard",
+      "chosenIconUrl": "https://app.asy-syifaa.com/icons/icon-192x192.png"
+    },
+    {
+      "name": "Tagihan",
+      "shortName": "Tagihan",
+      "url": "/tagihan",
+      "chosenIconUrl": "https://app.asy-syifaa.com/icons/icon-192x192.png"
+    }
+  ],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://app.asy-syifaa.com/manifest.webmanifest",
+  "fallbackType": "customtabs",
+  "features": {},
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "fullScopeUrl": "https://app.asy-syifaa.com/",
+  "minSdkVersion": 21,
+  "orientation": "portrait",
+  "fingerprints": [
+    {
+      "name": "upload-key",
+      "value": "5F:AA:05:CA:7C:FC:3B:2F:BF:78:C8:2D:CF:A5:E3:6E:34:C2:C6:F6:96:E6:72:1A:EF:6F:FD:31:FC:43:B3:FB"
+    }
+  ],
+  "additionalTrustedOrigins": [],
+  "retainedBundles": [],
+  "appVersion": "1.0.0"
+}

@@ -1,0 +1,27 @@
+name: Deploy ERP to VPS
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'erp-pesantren/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd /opt/asy-syifaa/erp/src
+            git pull origin main
+            docker compose exec -T app composer install --no-interaction --no-dev --optimize-autoloader
+            docker compose exec -T app php artisan migrate --force
+            docker compose exec -T app php artisan config:cache
+            docker compose exec -T app php artisan route:cache
+            docker compose exec -T app php artisan view:cache
+            docker compose exec -T app php artisan queue:restart

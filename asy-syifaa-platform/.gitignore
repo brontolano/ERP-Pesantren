@@ -1,0 +1,29 @@
+# === Dependencies ===
+/vendor/
+node_modules/
+
+# === Environment & secrets ===
+.env
+.env.*
+!.env.example
+
+# === Logs, cache & runtime ===
+storage/logs/*.log
+storage/cache/
+storage/sessions/
+*.log
+
+# === Bulk media / content ===
+# Catatan: untuk mencegah broken image di production, aset gambar dipakai website harus ikut di Git.
+
+# === Deploy artifacts ===
+*.zip
+*.b64
+website-deploy.zip
+
+# === OS / editor ===
+.DS_Store
+Thumbs.db
+# Local-only deploy key generated for GitHub Actions
+.github/gha_vps_ed25519
+.github/gha_vps_ed25519.pub

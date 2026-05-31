@@ -1,0 +1,45 @@
+name: Deploy PWA App
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'asy-syifaa-app/**'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: asy-syifaa-app/pwa/package-lock.json
+
+      - name: Install and Build
+        working-directory: asy-syifaa-app/pwa
+        run: |
+          npm ci
+          npm run build
+
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            rm -rf /opt/asy-syifaa/app/dist/*
+
+      - name: Copy build files
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          source: "asy-syifaa-app/pwa/dist/*"
+          target: "/opt/asy-syifaa/app/"
+          strip_components: 3

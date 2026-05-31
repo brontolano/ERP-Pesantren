@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased;}
+  html,body{width:480px;height:1040px;font-family:'Segoe UI',system-ui,sans-serif;background:#f0fdf4;}
+  .wrap{width:480px;height:1040px;overflow:hidden;position:relative;background:#f0fdf4;}
+
+  /* header */
+  .hdr{position:relative;background:linear-gradient(160deg,#1f6b43,#15784c);padding:54px 28px 90px;border-radius:0 0 36px 36px;overflow:hidden;}
+  .hdr .c1{position:absolute;width:240px;height:240px;border-radius:50%;background:rgba(255,255,255,.07);right:-40px;top:-60px;}
+  .hdr .c2{position:absolute;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.06);right:120px;top:30px;}
+  .hdr .c3{position:absolute;width:130px;height:130px;border-radius:50%;background:rgba(255,255,255,.05);left:-50px;bottom:-30px;}
+  .htop{display:flex;justify-content:space-between;align-items:flex-start;position:relative;z-index:2;}
+  .salam{color:#bbf7d0;font-size:20px;font-weight:500;}
+  .uname{color:#fff;font-size:34px;font-weight:800;margin-top:2px;}
+  .ava{width:62px;height:62px;border-radius:50%;border:2px solid rgba(255,255,255,.45);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:22px;background:rgba(255,255,255,.08);}
+  .tabs{display:flex;gap:14px;margin-top:22px;position:relative;z-index:2;}
+  .tab{padding:13px 30px;border-radius:999px;font-size:22px;font-weight:700;}
+  .tab.on{background:#fff;color:#166534;}
+  .tab.off{background:rgba(255,255,255,.16);color:#fff;}
+
+  .body{padding:0 22px;margin-top:-58px;position:relative;z-index:5;}
+
+  .card{background:#fff;border-radius:24px;box-shadow:0 16px 36px rgba(15,58,36,.12);padding:24px;}
+  .srow{display:flex;align-items:center;gap:18px;}
+  .savatar{width:74px;height:74px;border-radius:20px;background:linear-gradient(145deg,#1f6b43,#15a06a);color:#fff;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;}
+  .sname{font-size:28px;font-weight:800;color:#0f1f17;}
+  .sclass{font-size:20px;color:#6b7280;margin-top:2px;}
+  .pill-aktif{margin-left:auto;align-self:flex-start;background:#dcfce7;color:#15803d;font-size:19px;font-weight:700;padding:8px 20px;border-radius:999px;}
+  .hr{height:1px;background:#eef2f0;margin:22px 0;}
+  .meta{display:flex;gap:20px;}
+  .mi{display:flex;align-items:center;gap:14px;flex:1;}
+  .micon{width:48px;height:48px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:24px;}
+  .micon.g{background:#f1f5f4;}
+  .micon.r{background:#fee2e2;}
+  .ml small{display:block;color:#9ca3af;font-size:18px;}
+  .ml b{font-size:22px;color:#111;font-weight:800;}
+  .ml b.red{color:#dc2626;}
+  .btn-profil{margin-top:22px;background:#ecfdf3;color:#166534;font-size:22px;font-weight:700;text-align:center;padding:18px;border-radius:16px;}
+
+  .prayer{margin-top:20px;background:linear-gradient(145deg,#14532d,#0f3a24);border-radius:24px;padding:24px;color:#fff;box-shadow:0 14px 30px rgba(15,58,36,.18);}
+  .ptop{display:flex;justify-content:space-between;align-items:flex-start;}
+  .pnext{font-size:18px;color:#86efac;letter-spacing:1px;font-weight:600;}
+  .pname{font-size:34px;font-weight:800;margin-top:4px;}
+  .pname span{color:#86efac;font-size:24px;font-weight:600;}
+  .countbox{background:rgba(255,255,255,.08);border-radius:14px;padding:12px 18px;text-align:center;}
+  .countbox small{display:block;font-size:15px;color:#a7f3d0;letter-spacing:1px;}
+  .countbox b{font-size:30px;font-weight:800;letter-spacing:1px;font-variant-numeric:tabular-nums;}
+  .ptimes{display:flex;margin-top:22px;background:rgba(0,0,0,.18);border-radius:14px;overflow:hidden;}
+  .pt{flex:1;text-align:center;padding:16px 4px;}
+  .pt.on{background:rgba(255,255,255,.10);}
+  .pt small{display:block;color:#cbe8d6;font-size:17px;}
+  .pt b{font-size:22px;font-weight:800;}
+  .pt .dot{width:8px;height:8px;background:#fbbf24;border-radius:50%;margin:6px auto 0;}
+  .ploc{margin-top:16px;color:#9fd6b4;font-size:18px;}
+
+  .secttl{display:flex;align-items:center;gap:12px;margin:26px 4px 16px;font-size:26px;font-weight:800;color:#0f1f17;}
+  .secttl::before{content:"";width:6px;height:26px;background:#1f6b43;border-radius:4px;}
+  .grid2{display:flex;gap:16px;}
+  .scard{flex:1;background:#fff;border-radius:20px;padding:22px;box-shadow:0 10px 24px rgba(15,58,36,.08);display:flex;align-items:center;gap:16px;}
+  .sicon{width:52px;height:52px;border-radius:14px;background:#ecfdf3;display:flex;align-items:center;justify-content:center;font-size:26px;}
+  .sl small{display:block;color:#9ca3af;font-size:19px;}
+  .sl b{font-size:24px;color:#15803d;font-weight:800;}
+
+  /* bottom nav */
+  .nav{position:absolute;bottom:0;left:0;width:480px;background:#fff;border-top:1px solid #eef2f0;display:flex;padding:14px 8px 20px;box-shadow:0 -6px 20px rgba(0,0,0,.05);}
+  .nv{flex:1;text-align:center;color:#9ca3af;font-size:16px;font-weight:600;}
+  .nv .ic{font-size:26px;display:block;margin-bottom:4px;}
+  .nv.on{color:#1f6b43;}
+  .nv.on .ic{filter:none;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hdr">
+    <div class="c1"></div><div class="c2"></div><div class="c3"></div>
+    <div class="htop">
+      <div><div class="salam">Assalamu'alaikum,</div><div class="uname">Orang Santri</div></div>
+      <div class="ava">OS</div>
+    </div>
+    <div class="tabs"><div class="tab on">Ahmad</div><div class="tab off">Fatimah</div></div>
+  </div>
+
+  <div class="body">
+    <div class="card">
+      <div class="srow">
+        <div class="savatar">AF</div>
+        <div><div class="sname">Ahmad Fauzan</div><div class="sclass">8 VIII-A · MTs</div></div>
+        <div class="pill-aktif">Aktif</div>
+      </div>
+      <div class="hr"></div>
+      <div class="meta">
+        <div class="mi"><div class="micon g">🪪</div><div class="ml"><small>NIS</small><b>2026-001</b></div></div>
+        <div class="mi"><div class="micon r">💵</div><div class="ml"><small>Tunggakan</small><b class="red">1 bulan</b></div></div>
+      </div>
+      <div class="btn-profil">ⓘ  Lihat Profil Lengkap Santri</div>
+    </div>
+
+    <div class="prayer">
+      <div class="ptop">
+        <div><div class="pnext">SHOLAT BERIKUTNYA</div><div class="pname">Shubuh <span>· 04:29</span></div></div>
+        <div class="countbox"><small>MENUJU SHOLAT</small><b>04:47:49</b></div>
+      </div>
+      <div class="ptimes">
+        <div class="pt on"><small>Shubuh</small><b>04:29</b><div class="dot"></div></div>
+        <div class="pt"><small>Dzuhur</small><b>11:54</b></div>
+        <div class="pt"><small>Ashr</small><b>15:14</b></div>
+        <div class="pt"><small>Maghrib</small><b>17:53</b></div>
+        <div class="pt"><small>Isya</small><b>19:04</b></div>
+      </div>
+      <div class="ploc">📍 Sumedang</div>
+    </div>
+
+    <div class="secttl">Status Hari Ini</div>
+    <div class="grid2">
+      <div class="scard"><div class="sicon">✅</div><div class="sl"><small>Kehadiran</small><b>Hadir</b></div></div>
+      <div class="scard"><div class="sicon">💚</div><div class="sl"><small>Kesehatan</small><b>Sehat</b></div></div>
+    </div>
+  </div>
+
+  <div class="nav">
+    <div class="nv on"><span class="ic">🏠</span>Beranda</div>
+    <div class="nv"><span class="ic">💳</span>Keuangan</div>
+    <div class="nv"><span class="ic">📖</span>Belajar</div>
+    <div class="nv"><span class="ic">✨</span>Kegiatan</div>
+    <div class="nv"><span class="ic">🔔</span>Info</div>
+  </div>
+</div>
+</body>
+</html>

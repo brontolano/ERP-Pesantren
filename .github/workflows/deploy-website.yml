@@ -1,0 +1,27 @@
+name: Deploy Website to Hostinger
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'asy-syifaa-platform/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: asy-syifaa-platform
+
+      - name: Deploy to Hostinger via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.HOSTINGER_HOST }}
+          username: ${{ secrets.HOSTINGER_USER }}
+          key: ${{ secrets.HOSTINGER_SSH_KEY }}
+          port: ${{ secrets.HOSTINGER_PORT }}
+          script: |
+            cd ~/public_html
+            git pull origin main -- asy-syifaa-platform/
+            cp -r asy-syifaa-platform/* .
