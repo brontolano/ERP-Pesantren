@@ -10,6 +10,13 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      - name: Validate required secrets
+        run: |
+          test -n "${{ secrets.HOSTINGER_HOST }}" || (echo "Missing secret: HOSTINGER_HOST" && exit 1)
+          test -n "${{ secrets.HOSTINGER_USER }}" || (echo "Missing secret: HOSTINGER_USER" && exit 1)
+          test -n "${{ secrets.HOSTINGER_SSH_KEY }}" || (echo "Missing secret: HOSTINGER_SSH_KEY" && exit 1)
+          test -n "${{ secrets.HOSTINGER_PORT }}" || (echo "Missing secret: HOSTINGER_PORT" && exit 1)
+
       - uses: actions/checkout@v4
         with:
           sparse-checkout: asy-syifaa-website
@@ -20,6 +27,7 @@ jobs:
           host: ${{ secrets.HOSTINGER_HOST }}
           username: ${{ secrets.HOSTINGER_USER }}
           key: ${{ secrets.HOSTINGER_SSH_KEY }}
+          passphrase: ${{ secrets.HOSTINGER_SSH_PASSPHRASE }}
           port: ${{ secrets.HOSTINGER_PORT }}
           script: |
             cd ~/public_html
