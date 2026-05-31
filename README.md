@@ -20,7 +20,7 @@ _Agent Manager/_ERP/
 | Folder | Repo | Domain | Stack |
 |--------|------|--------|-------|
 | `asy-syifaa-erp` | [brontolano/asy-syifaa](https://github.com/brontolano/asy-syifaa) | erp.asy-syifaa.com | Laravel 13 + Filament 5 + PHP 8.4 |
-| `asy-syifaa-website` | [brontolano/asy-syifaa-](https://github.com/brontolano/asy-syifaa-) | www.asy-syifaa.com | PHP native (Hostinger) |
+| `asy-syifaa-website` | [brontolano/asy-syifaa-website](https://github.com/brontolano/asy-syifaa-website) | www.asy-syifaa.com | PHP native (Hostinger) |
 | `asy-syifaa-app` | [brontolano/app.asy-syifaa](https://github.com/brontolano/app.asy-syifaa) | app.asy-syifaa.com | Vue 3 + Vite + PWA |
 
 ## Infrastruktur
