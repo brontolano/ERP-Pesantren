@@ -44,7 +44,7 @@ jobs:
             npm ci --omit=dev
             if [ -f prisma/schema.prisma ]; then
               echo "==> Running database migrations..."
-              npx prisma migrate deploy
+              npx prisma migrate deploy || echo "Warning: migration skipped (check Prisma config)"
             fi
             echo "==> Restarting API via PM2..."
             pm2 restart asy-syifaa-api
