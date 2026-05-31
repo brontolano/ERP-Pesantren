@@ -222,3 +222,33 @@ Kesimpulan update 2:
   1) `VPS_SSH_PASSPHRASE`
   2) `HOSTINGER_SSH_KEY`
   3) (opsional jika encrypted) `HOSTINGER_SSH_PASSPHRASE`
+
+---
+
+## 11) Update Verifikasi Path VPS dari User (2026-06-01 malam)
+
+Sumber bukti: `pasted-text.txt` (hasil SSH langsung dari server).
+
+Temuan terkonfirmasi:
+1. `cd ~/public_html` gagal di server root:
+   - Error: `-bash: cd: /root/public_html: No such file or directory`
+2. Lokasi website aktif ada di:
+   - `/opt/asy-syifaa/website/src`
+3. Lokasi modul lain juga terdeteksi di `/opt`:
+   - ERP: `/opt/asy-syifaa/erp/src`
+   - API/backend: `/opt/asy-syifaa/backend`
+   - App: `/opt/asy-syifaa-app`
+
+Implikasi:
+- Workflow website sebelumnya gagal karena asumsi path deploy `~/public_html` tidak sesuai struktur VPS saat ini.
+
+Perbaikan yang diterapkan:
+- File: `.github/workflows/deploy-website.yml`
+- Script deploy diubah menjadi:
+  - prioritas target `TARGET_DIR=/opt/asy-syifaa/website/src`
+  - fallback ke `~/public_html` bila ada
+  - fail-fast bila keduanya tidak ada
+
+Status blocker tersisa setelah patch ini:
+1. `VPS_SSH_PASSPHRASE` untuk ERP/App masih harus benar sesuai private key (`x509: decryption password incorrect`).
+2. Website deploy sekarang sudah benar secara path, tinggal memastikan key/passphrase Hostinger valid.

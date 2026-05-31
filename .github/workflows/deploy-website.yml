@@ -30,6 +30,15 @@ jobs:
           passphrase: ${{ secrets.HOSTINGER_SSH_PASSPHRASE }}
           port: ${{ secrets.HOSTINGER_PORT }}
           script: |
-            cd ~/public_html
+            if [ -d /opt/asy-syifaa/website/src ]; then
+              TARGET_DIR=/opt/asy-syifaa/website/src
+            elif [ -d ~/public_html ]; then
+              TARGET_DIR=~/public_html
+            else
+              echo "No valid website target directory found."
+              exit 1
+            fi
+
+            cd "$TARGET_DIR"
             git pull origin main -- asy-syifaa-website/
             cp -r asy-syifaa-website/* .
