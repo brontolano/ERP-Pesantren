@@ -38,6 +38,7 @@ jobs:
             set -e
             cd /opt/asy-syifaa/backend
             echo "==> Pulling latest changes..."
+            git stash --include-untracked 2>/dev/null || true
             git pull origin main
             echo "==> Installing dependencies..."
             npm ci --omit=dev
