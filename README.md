@@ -5,8 +5,9 @@ Sistem digital terpadu Pondok Pesantren Asy-Syifaa Wal Mahmuudiyyah, Sumedang.
 ## Struktur Project
 
 ```
-_Agent Manager/_ERP/
-├── asy-syifaa-erp/        ERP + API Backend
+ERP-Pesantren/ (Monorepo)
+├── asy-syifaa-erp/        ERP + Filament Admin Panel
+├── asy-syifaa-api/        Backend API DataMaster (🆕 submodule)
 ├── asy-syifaa-website/    Landing Page & Website Publik
 ├── asy-syifaa-app/        PWA Aplikasi Wali Santri
 ├── _branding/             Logo & Icon Assets
@@ -17,11 +18,12 @@ _Agent Manager/_ERP/
 
 ## Repositories
 
-| Folder | Repo | Domain | Stack |
-|--------|------|--------|-------|
-| `asy-syifaa-erp` | [brontolano/asy-syifaa](https://github.com/brontolano/asy-syifaa) | erp.asy-syifaa.com | Laravel 13 + Filament 5 + PHP 8.4 |
-| `asy-syifaa-website` | [brontolano/asy-syifaa-website](https://github.com/brontolano/asy-syifaa-website) | www.asy-syifaa.com | PHP native (Hostinger) |
-| `asy-syifaa-app` | [brontolano/app.asy-syifaa](https://github.com/brontolano/app.asy-syifaa) | app.asy-syifaa.com | Vue 3 + Vite + PWA |
+| Folder | Repo | Domain | Stack | Tipe |
+|--------|------|--------|-------|------|
+| `asy-syifaa-erp` | [brontolano/asy-syifaa](https://github.com/brontolano/asy-syifaa) | erp.asy-syifaa.com | Laravel 13 + Filament 5 + PHP 8.4 | Source |
+| `asy-syifaa-api` | [brontolano/asy-syifaa-datamaster](https://github.com/brontolano/asy-syifaa-datamaster) | api.asy-syifaa.com | Node.js + Express (DataMaster) | Submodule |
+| `asy-syifaa-website` | [brontolano/asy-syifaa-website](https://github.com/brontolano/asy-syifaa-website) | www.asy-syifaa.com | PHP native (Hostinger) | Source |
+| `asy-syifaa-app` | [brontolano/app.asy-syifaa](https://github.com/brontolano/app.asy-syifaa) | app.asy-syifaa.com | Vue 3 + Vite + PWA | Source |
 
 ## Infrastruktur
 
@@ -45,8 +47,15 @@ _Agent Manager/_ERP/
 
 ## Quick Start (Development)
 
+### Setup awal (clone + submodule)
 ```bash
-# ERP Backend
+git clone https://github.com/brontolano/ERP-Pesantren.git
+cd ERP-Pesantren
+git submodule update --init --recursive
+```
+
+### Backend ERP (Laravel)
+```bash
 cd asy-syifaa-erp
 composer install
 cp .env.example .env
@@ -54,8 +63,20 @@ php artisan key:generate
 php artisan migrate
 php artisan wilayah:import path/to/wilayah.sql path/to/wilayah_kodepos.sql --fresh
 php artisan serve
+```
 
-# PWA App
+### Backend API DataMaster (Node.js)
+```bash
+cd asy-syifaa-api
+npm install
+cp .env.example .env
+npm start
+# atau untuk development
+npm run dev
+```
+
+### PWA App (Vue 3)
+```bash
 cd asy-syifaa-app/pwa
 npm install
 npm run dev
@@ -63,6 +84,16 @@ npm run dev
 
 ## API Endpoints
 
+### 1. Backend ERP (Laravel Filament)
+Base URL: `https://erp.asy-syifaa.com/api`
+
+| Grup | Contoh Endpoint |
+|------|-----------------|
+| Auth | `POST /auth/login`, `GET /auth/me` |
+| Dashboard | `GET /dashboard/stats` |
+| Admin | CRUD untuk modul Filament |
+
+### 2. Backend DataMaster (Node.js)
 Base URL: `https://api.asy-syifaa.com/api/v1`
 
 | Grup | Contoh Endpoint |

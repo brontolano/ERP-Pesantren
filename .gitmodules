@@ -1,0 +1,3 @@
+[submodule "asy-syifaa-api"]
+	path = asy-syifaa-api
+	url = https://github.com/brontolano/asy-syifaa-datamaster.git
