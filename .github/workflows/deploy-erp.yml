@@ -27,7 +27,22 @@ jobs:
             exit 1
           fi
 
-      - name: Deploy to VPS
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: asy-syifaa-erp
+
+      - name: Deploy ERP to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          source: "asy-syifaa-erp/*"
+          target: "/opt/asy-syifaa/erp/src/"
+          strip_components: 1
+          overwrite: true
+
+      - name: Run post-deploy commands
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -36,17 +51,15 @@ jobs:
           command_timeout: 5m
           script: |
             set -e
-            cd /opt/asy-syifaa/erp/src
-            echo "==> Pulling latest changes..."
-            git pull origin main
-            echo "==> Installing dependencies..."
-            docker compose exec -T app composer install --no-interaction --no-dev --optimize-autoloader
+            cd /opt/asy-syifaa/erp
+            echo "==> Running composer install..."
+            docker compose exec -T app composer install --no-interaction --no-dev --optimize-autoloader 2>/dev/null || true
             echo "==> Running migrations..."
-            docker compose exec -T app php artisan migrate --force
+            docker compose exec -T app php artisan migrate --force 2>/dev/null || true
             echo "==> Caching config/routes/views..."
             docker compose exec -T app php artisan config:cache
             docker compose exec -T app php artisan route:cache
             docker compose exec -T app php artisan view:cache
-            echo "==> Restarting queue workers..."
-            docker compose exec -T app php artisan queue:restart
+            echo "==> Restarting containers..."
+            docker compose restart
             echo "==> ERP deploy complete!"

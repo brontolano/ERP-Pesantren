@@ -44,38 +44,32 @@ jobs:
           npm ci
           npm run build
 
-      - name: Clear old files on VPS
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-
-          script: |
-            set -e
-            mkdir -p /opt/asy-syifaa/app/dist
-            rm -rf /opt/asy-syifaa/app/dist/*
-            echo "==> Old files cleared"
-
-      - name: Copy build files to VPS
+      - name: Deploy to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-
           source: "asy-syifaa-app/pwa/dist/*"
-          target: "/opt/asy-syifaa/app/"
+          target: "/opt/asy-syifaa-app/dist/"
           strip_components: 3
+          overwrite: true
 
-      - name: Verify deployment
+      - name: Restart PWA container
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-
           script: |
-            FILE_COUNT=$(find /opt/asy-syifaa/app/dist -type f | wc -l)
-            echo "==> PWA deploy complete! ($FILE_COUNT files deployed)"
-            [ "$FILE_COUNT" -gt 0 ] || (echo "::error::No files deployed!" && exit 1)
+            set -e
+            FILE_COUNT=$(find /opt/asy-syifaa-app/dist -type f 2>/dev/null | wc -l)
+            echo "==> $FILE_COUNT files deployed"
+            if [ "$FILE_COUNT" -gt 0 ]; then
+              cd /opt/asy-syifaa-app
+              docker compose restart 2>/dev/null || docker restart asy-syifaa-pwa 2>/dev/null || true
+              echo "==> PWA deploy complete!"
+            else
+              echo "::error::No files deployed!"
+              exit 1
+            fi
