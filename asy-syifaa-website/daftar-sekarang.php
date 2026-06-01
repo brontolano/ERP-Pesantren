@@ -577,8 +577,20 @@ header('Expires: 0');
                                 </div>
                                 <div class="col-12">
                                     <div class="form-floating">
-                                        <textarea class="form-control" name="alamat_jalan" id="alamatJalan" style="height: 80px" placeholder="Alamat" required></textarea>
-                                        <label>Alamat Jalan (RT/RW, Gang, No. Rumah)</label>
+                                        <textarea class="form-control" name="alamat_jalan" id="alamatJalan" style="height: 80px" placeholder="Alamat Jalan (Gang, No. Rumah)" required></textarea>
+                                        <label>Alamat Jalan (Gang, No. Rumah)</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" name="rt" id="rt" placeholder="RT">
+                                        <label>RT</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" name="rw" id="rw" placeholder="RW">
+                                        <label>RW</label>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
