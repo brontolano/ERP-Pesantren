@@ -894,17 +894,23 @@ header('Expires: 0');
 
     let villagesCache = [];
 
+    function toArray(input) {
+      if (Array.isArray(input)) return input;
+      if (input && typeof input === 'object') return Object.values(input);
+      return [];
+    }
     async function fj(url, fallbackPath = '') {
       const r = await fetch(url, { headers: { 'Accept': 'application/json' } });
       if (r.ok) {
         const j = await r.json();
-        const items = Array.isArray(j?.data) ? j.data : [];
+        const items = toArray(j?.data);
         if (items.length > 0) return items;
       }
       if (!fallbackPath) throw new Error('Gagal memuat wilayah');
       const rf = await fetch(wilayahFallbackBase + fallbackPath, { headers: { 'Accept': 'application/json' } });
       if (!rf.ok) throw new Error('Fallback wilayah gagal dimuat');
-      return await rf.json();
+      const raw = await rf.json();
+      return toArray(raw);
     }
     function fill(el, items, valKey, lblKey) {
       el.innerHTML = '<option value="">— Pilih —</option>';
@@ -952,17 +958,23 @@ header('Expires: 0');
       const post = document.getElementById(prefix + 'KodePos');
       if (!prov) return;
       let villagesCache = [];
+      function toArray(input) {
+        if (Array.isArray(input)) return input;
+        if (input && typeof input === 'object') return Object.values(input);
+        return [];
+      }
       async function fj(url, fallbackPath = '') {
         const r = await fetch(url, { headers: { 'Accept': 'application/json' } });
         if (r.ok) {
           const j = await r.json();
-          const items = Array.isArray(j?.data) ? j.data : [];
+          const items = toArray(j?.data);
           if (items.length > 0) return items;
         }
         if (!fallbackPath) throw new Error('Gagal memuat wilayah');
         const rf = await fetch(wilayahFallbackBase + fallbackPath, { headers: { 'Accept': 'application/json' } });
         if (!rf.ok) throw new Error('Fallback wilayah gagal dimuat');
-        return await rf.json();
+        const raw = await rf.json();
+        return toArray(raw);
       }
       function fill(el, items, valKey, lblKey) {
         el.innerHTML = '<option value="">— Pilih —</option>';
