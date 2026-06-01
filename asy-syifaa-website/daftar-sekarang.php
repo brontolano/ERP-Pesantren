@@ -509,12 +509,70 @@ header('Expires: 0');
                             <h5 class="mb-4 fw-bold text-secondary border-bottom pb-2"><i class="fa-solid fa-check-double me-2"></i>Alamat & Data KK</h5>
 
                             <div class="row g-3">
+                                <div class="col-12 mt-1">
+                                    <h6 class="fw-bold text-secondary">Data Wali (Opsional, jika berbeda dari Ayah/Ibu)</h6>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" name="nama_wali" placeholder="Nama Wali">
+                                        <label>Nama Wali</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" name="hubungan_wali" placeholder="Hubungan Wali">
+                                        <label>Hubungan dengan Santri</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" name="no_wa_wali" id="noWaWali" placeholder="WhatsApp Wali">
+                                        <label>No. WhatsApp Wali</label>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-floating">
+                                        <textarea class="form-control" name="alamat_wali_jalan" id="alamatWaliJalan" style="height: 80px" placeholder="Alamat Wali"></textarea>
+                                        <label>Alamat Jalan Wali</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold text-muted">Provinsi Wali</label>
+                                    <select class="form-select" name="alamat_wali_province_code" id="wlProvinsi">
+                                        <option value="">— Pilih Provinsi —</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold text-muted">Kabupaten/Kota Wali</label>
+                                    <select class="form-select" name="alamat_wali_city_code" id="wlKota" disabled>
+                                        <option value="">— Pilih Kab/Kota —</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold text-muted">Kecamatan Wali</label>
+                                    <select class="form-select" name="alamat_wali_district_code" id="wlKecamatan" disabled>
+                                        <option value="">— Pilih Kecamatan —</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold text-muted">Desa/Kelurahan Wali</label>
+                                    <select class="form-select" name="alamat_wali_village_code" id="wlDesa" disabled>
+                                        <option value="">— Pilih Desa/Kelurahan —</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" name="alamat_wali_kode_pos" id="wlKodePos" placeholder="Kode Pos Wali" readonly>
+                                        <label>Kode Pos Wali</label>
+                                    </div>
+                                </div>
                                 <div class="col-12">
                                     <label class="form-label small fw-bold text-muted">Gunakan alamat yang sama</label>
                                     <select class="form-select" id="sumberAlamatSantri" onchange="copyAlamatSantri()">
                                         <option value="">Tidak, isi manual</option>
                                         <option value="ayah">Sama dengan Ayah</option>
                                         <option value="ibu">Sama dengan Ibu</option>
+                                        <option value="wali">Sama dengan Wali</option>
                                     </select>
                                 </div>
                                 <div class="col-12">
@@ -786,10 +844,18 @@ header('Expires: 0');
           ['iKecamatan', 'wKecamatan'],
           ['iDesa', 'wDesa'],
           ['iKodePos', 'wKodePos']
+        ],
+        wali: [
+          ['alamatWaliJalan', 'alamatJalan'],
+          ['wlProvinsi', 'wProvinsi'],
+          ['wlKota', 'wKota'],
+          ['wlKecamatan', 'wKecamatan'],
+          ['wlDesa', 'wDesa'],
+          ['wlKodePos', 'wKodePos']
         ]
       };
       const mapIds = mapBySource[source] || [];
-      const lock = source === 'ayah' || source === 'ibu';
+      const lock = source === 'ayah' || source === 'ibu' || source === 'wali';
       if (alamatSantri) alamatSantri.readOnly = lock;
       santriSelectIds.forEach((id) => {
         const el = document.getElementById(id);
@@ -878,6 +944,7 @@ header('Expires: 0');
     }
     bind('a');
     bind('i');
+    bind('wl');
   })();
 
   function normalizeGuardianPhone(value) {
@@ -943,8 +1010,9 @@ header('Expires: 0');
               const namaIbu = String(fd.get("nama_ibu") || "").trim();
               const noWaAyah = normalizeGuardianPhone(fd.get("no_wa_ayah"));
               const noWaIbu = normalizeGuardianPhone(fd.get("no_wa_ibu"));
+              const noWaWali = normalizeGuardianPhone(fd.get("no_wa_wali"));
               const noWaPeserta = normalizeGuardianPhone(fd.get("no_wa_peserta"));
-              const guardianPhone = noWaAyah || noWaIbu;
+              const guardianPhone = noWaAyah || noWaIbu || noWaWali;
 
               if (guardianPhone && !isValidGuardianPhone(guardianPhone)) {
                   alert("Nomor WhatsApp wali tidak valid. Gunakan format 08xxxxxxxxxx.");
@@ -985,7 +1053,16 @@ header('Expires: 0');
                   `alamat_ibu_city_code:${fd.get("alamat_ibu_city_code") || "-"}`,
                   `alamat_ibu_district_code:${fd.get("alamat_ibu_district_code") || "-"}`,
                   `alamat_ibu_village_code:${fd.get("alamat_ibu_village_code") || "-"}`,
-                  `alamat_ibu_kode_pos:${fd.get("alamat_ibu_kode_pos") || "-"}`
+                  `alamat_ibu_kode_pos:${fd.get("alamat_ibu_kode_pos") || "-"}`,
+                  `nama_wali:${fd.get("nama_wali") || "-"}`,
+                  `hubungan_wali:${fd.get("hubungan_wali") || "-"}`,
+                  `no_wa_wali:${fd.get("no_wa_wali") || "-"}`,
+                  `alamat_wali_jalan:${fd.get("alamat_wali_jalan") || "-"}`,
+                  `alamat_wali_province_code:${fd.get("alamat_wali_province_code") || "-"}`,
+                  `alamat_wali_city_code:${fd.get("alamat_wali_city_code") || "-"}`,
+                  `alamat_wali_district_code:${fd.get("alamat_wali_district_code") || "-"}`,
+                  `alamat_wali_village_code:${fd.get("alamat_wali_village_code") || "-"}`,
+                  `alamat_wali_kode_pos:${fd.get("alamat_wali_kode_pos") || "-"}`
               ].join(" | ");
 
               const alamatJalan = String(fd.get("alamat_jalan") || "").trim();
