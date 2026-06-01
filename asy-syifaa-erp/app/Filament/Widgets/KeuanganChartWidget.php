@@ -8,10 +8,10 @@ use Illuminate\Support\Carbon;
 
 class KeuanganChartWidget extends ChartWidget
 {
-    protected static ?string $heading = 'Pendapatan 6 Bulan Terakhir';
-    protected static ?string $pollingInterval = '60s';
+    protected ?string $heading = 'Pendapatan 6 Bulan Terakhir';
+    protected ?string $pollingInterval = '60s';
     protected static ?int $sort = 4;
-    protected static ?string $maxHeight = '280px';
+    protected ?string $maxHeight = '280px';
 
     public static function canView(): bool
     {

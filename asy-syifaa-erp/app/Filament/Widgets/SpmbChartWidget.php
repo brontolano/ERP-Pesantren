@@ -7,10 +7,10 @@ use Filament\Widgets\DoughnutChartWidget;
 
 class SpmbChartWidget extends DoughnutChartWidget
 {
-    protected static ?string $heading = 'Distribusi Status Pendaftar';
-    protected static ?string $pollingInterval = '60s';
+    protected ?string $heading = 'Distribusi Status Pendaftar';
+    protected ?string $pollingInterval = '60s';
     protected static ?int $sort = 3;
-    protected static ?string $maxHeight = '280px';
+    protected ?string $maxHeight = '280px';
 
     public static function canView(): bool
     {
