@@ -47,6 +47,18 @@ class SpmbRegisterRequest extends FormRequest
                 ? $this->input('source')
                 : 'website',
             'notes'         => $notes ?: null,
+            'ayah_alamat'   => $this->input('ayah_alamat') ?: $this->input('alamat_ayah_jalan'),
+            'ibu_alamat'    => $this->input('ibu_alamat') ?: $this->input('alamat_ibu_jalan'),
+            'ayah_province_code' => $this->input('ayah_province_code') ?: $this->input('alamat_ayah_province_code'),
+            'ayah_city_code' => $this->input('ayah_city_code') ?: $this->input('alamat_ayah_city_code'),
+            'ayah_district_code' => $this->input('ayah_district_code') ?: $this->input('alamat_ayah_district_code'),
+            'ayah_village_code' => $this->input('ayah_village_code') ?: $this->input('alamat_ayah_village_code'),
+            'ayah_kode_pos' => $this->input('ayah_kode_pos') ?: $this->input('alamat_ayah_kode_pos'),
+            'ibu_province_code' => $this->input('ibu_province_code') ?: $this->input('alamat_ibu_province_code'),
+            'ibu_city_code' => $this->input('ibu_city_code') ?: $this->input('alamat_ibu_city_code'),
+            'ibu_district_code' => $this->input('ibu_district_code') ?: $this->input('alamat_ibu_district_code'),
+            'ibu_village_code' => $this->input('ibu_village_code') ?: $this->input('alamat_ibu_village_code'),
+            'ibu_kode_pos' => $this->input('ibu_kode_pos') ?: $this->input('alamat_ibu_kode_pos'),
         ]);
     }
 
@@ -68,6 +80,18 @@ class SpmbRegisterRequest extends FormRequest
             'academic_year' => ['nullable', 'string', 'max:9'],
             'source'        => ['nullable', 'string', 'in:website,manual,referral'],
             'notes'         => ['nullable', 'string'],
+            'ayah_alamat'   => ['nullable', 'string'],
+            'ayah_province_code' => ['nullable', 'string', 'size:2', 'exists:master_provinces,code'],
+            'ayah_city_code' => ['nullable', 'string', 'size:5', 'exists:master_cities,code'],
+            'ayah_district_code' => ['nullable', 'string', 'size:8', 'exists:master_districts,code'],
+            'ayah_village_code' => ['nullable', 'string', 'size:13', 'exists:master_villages,code'],
+            'ayah_kode_pos' => ['nullable', 'string', 'max:10'],
+            'ibu_alamat'    => ['nullable', 'string'],
+            'ibu_province_code' => ['nullable', 'string', 'size:2', 'exists:master_provinces,code'],
+            'ibu_city_code' => ['nullable', 'string', 'size:5', 'exists:master_cities,code'],
+            'ibu_district_code' => ['nullable', 'string', 'size:8', 'exists:master_districts,code'],
+            'ibu_village_code' => ['nullable', 'string', 'size:13', 'exists:master_villages,code'],
+            'ibu_kode_pos' => ['nullable', 'string', 'max:10'],
         ];
     }
 

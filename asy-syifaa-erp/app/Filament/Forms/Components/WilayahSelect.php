@@ -13,14 +13,16 @@ use Filament\Forms\Set;
 
 class WilayahSelect
 {
-    public static function make(string $prefix = ''): array
+    public static function make(string $prefix = '', ?string $lockField = null): array
     {
         $p = $prefix ? "{$prefix}_" : '';
+        $disabledWhenLocked = fn (Get $get): bool => $lockField ? filled($get($lockField)) : false;
 
         return [
             Select::make("{$p}province_code")
                 ->label('Provinsi')
                 ->options(fn () => Province::orderBy('name')->pluck('name', 'code'))
+                ->disabled($disabledWhenLocked)
                 ->searchable()
                 ->preload()
                 ->live()
@@ -33,6 +35,7 @@ class WilayahSelect
 
             Select::make("{$p}city_code")
                 ->label('Kabupaten/Kota')
+                ->disabled($disabledWhenLocked)
                 ->options(function (Get $get) use ($p) {
                     $province = $get("{$p}province_code");
                     if (!$province) return [];
@@ -49,6 +52,7 @@ class WilayahSelect
 
             Select::make("{$p}district_code")
                 ->label('Kecamatan')
+                ->disabled($disabledWhenLocked)
                 ->options(function (Get $get) use ($p) {
                     $city = $get("{$p}city_code");
                     if (!$city) return [];
@@ -64,6 +68,7 @@ class WilayahSelect
 
             Select::make("{$p}village_code")
                 ->label('Desa/Kelurahan')
+                ->disabled($disabledWhenLocked)
                 ->options(function (Get $get) use ($p) {
                     $district = $get("{$p}district_code");
                     if (!$district) return [];
@@ -84,7 +89,7 @@ class WilayahSelect
             TextInput::make("{$p}kode_pos")
                 ->label('Kode Pos')
                 ->maxLength(5)
-                ->readOnly(),
+                ->readOnly(fn (Get $get): bool => $lockField ? filled($get($lockField)) : true),
         ];
     }
 }

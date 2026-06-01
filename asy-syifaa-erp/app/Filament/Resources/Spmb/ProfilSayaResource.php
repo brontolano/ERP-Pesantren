@@ -197,17 +197,52 @@ class ProfilSayaResource extends Resource
 
                                 \Filament\Schemas\Components\Section::make('Alamat Lengkap')
                                     ->schema([
+                                        Forms\Components\Select::make('alamat_sumber')
+                                            ->label('Gunakan alamat yang sama')
+                                            ->options([
+                                                '' => 'Tidak, isi manual',
+                                                'ayah' => 'Sama dengan Ayah',
+                                                'ibu' => 'Sama dengan Ibu',
+                                                'wali' => 'Sama dengan Wali',
+                                            ])
+                                            ->live()
+                                            ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                                                if ($state === 'ayah') {
+                                                    $set('alamat_jalan', $get('ayah_alamat'));
+                                                    $set('province_code', $get('ayah_province_code'));
+                                                    $set('city_code', $get('ayah_city_code'));
+                                                    $set('district_code', $get('ayah_district_code'));
+                                                    $set('village_code', $get('ayah_village_code'));
+                                                    $set('kode_pos', $get('ayah_kode_pos'));
+                                                }
+                                                if ($state === 'ibu') {
+                                                    $set('alamat_jalan', $get('ibu_alamat'));
+                                                    $set('province_code', $get('ibu_province_code'));
+                                                    $set('city_code', $get('ibu_city_code'));
+                                                    $set('district_code', $get('ibu_district_code'));
+                                                    $set('village_code', $get('ibu_village_code'));
+                                                    $set('kode_pos', $get('ibu_kode_pos'));
+                                                }
+                                                if ($state === 'wali') {
+                                                    $set('alamat_jalan', $get('wali_alamat'));
+                                                }
+                                            })
+                                            ->dehydrated(false)
+                                            ->columnSpanFull(),
                                         Forms\Components\Textarea::make('alamat_jalan')
                                             ->label('Alamat Jalan')
                                             ->rows(2)
+                                            ->readOnly(fn (callable $get) => filled($get('alamat_sumber')))
                                             ->columnSpanFull(),
                                         Forms\Components\TextInput::make('rt')
                                             ->label('RT')
+                                            ->readOnly(fn (callable $get) => filled($get('alamat_sumber')))
                                             ->maxLength(5),
                                         Forms\Components\TextInput::make('rw')
                                             ->label('RW')
+                                            ->readOnly(fn (callable $get) => filled($get('alamat_sumber')))
                                             ->maxLength(5),
-                                        ...\App\Filament\Forms\Components\WilayahSelect::make(),
+                                        ...\App\Filament\Forms\Components\WilayahSelect::make('', 'alamat_sumber'),
                                     ])
                                     ->columns(3),
                             ]),
@@ -249,10 +284,10 @@ class ProfilSayaResource extends Resource
                                             ->tel(),
                                         Forms\Components\Textarea::make('ayah_alamat')
                                             ->label('Alamat (jika berbeda)')
-                                            ->rows(2)
-                                            ->columnSpanFull(),
+                                            ->rows(2),
+                                        ...\App\Filament\Forms\Components\WilayahSelect::make('ayah_'),
                                     ])
-                                    ->columns(2),
+                                    ->columns(3),
                             ]),
 
                         // === TAB 4: DATA IBU ===
@@ -290,12 +325,29 @@ class ProfilSayaResource extends Resource
                                         Forms\Components\TextInput::make('ibu_no_telepon')
                                             ->label('No. Telepon/HP')
                                             ->tel(),
+                                        Forms\Components\Checkbox::make('ibu_alamat_sama_dengan_ayah')
+                                            ->label('Alamat Ibu sama dengan Ayah')
+                                            ->live()
+                                            ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                                                if (!$state) {
+                                                    return;
+                                                }
+                                                $set('ibu_alamat', $get('ayah_alamat'));
+                                                $set('ibu_province_code', $get('ayah_province_code'));
+                                                $set('ibu_city_code', $get('ayah_city_code'));
+                                                $set('ibu_district_code', $get('ayah_district_code'));
+                                                $set('ibu_village_code', $get('ayah_village_code'));
+                                                $set('ibu_kode_pos', $get('ayah_kode_pos'));
+                                            })
+                                            ->dehydrated(false)
+                                            ->columnSpanFull(),
                                         Forms\Components\Textarea::make('ibu_alamat')
                                             ->label('Alamat (jika berbeda)')
-                                            ->rows(2)
-                                            ->columnSpanFull(),
+                                            ->readOnly(fn (callable $get) => (bool) $get('ibu_alamat_sama_dengan_ayah'))
+                                            ->rows(2),
+                                        ...\App\Filament\Forms\Components\WilayahSelect::make('ibu_', 'ibu_alamat_sama_dengan_ayah'),
                                     ])
-                                    ->columns(2),
+                                    ->columns(3),
                             ]),
 
                         // === TAB 5: DATA WALI ===
@@ -334,12 +386,28 @@ class ProfilSayaResource extends Resource
                                         Forms\Components\TextInput::make('wali_no_telepon')
                                             ->label('No. Telepon/HP')
                                             ->tel(),
+                                        Forms\Components\Select::make('wali_alamat_sumber')
+                                            ->label('Gunakan alamat yang sama')
+                                            ->options([
+                                                '' => 'Tidak, isi manual',
+                                                'ayah' => 'Sama dengan Ayah',
+                                                'ibu' => 'Sama dengan Ibu',
+                                            ])
+                                            ->live()
+                                            ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                                                if ($state === 'ayah') {
+                                                    $set('wali_alamat', $get('ayah_alamat'));
+                                                }
+                                                if ($state === 'ibu') {
+                                                    $set('wali_alamat', $get('ibu_alamat'));
+                                                }
+                                            })
+                                            ->dehydrated(false),
                                         Forms\Components\Textarea::make('wali_alamat')
                                             ->label('Alamat')
-                                            ->rows(2)
-                                            ->columnSpanFull(),
+                                            ->rows(2),
                                     ])
-                                    ->columns(2),
+                                    ->columns(3),
                             ]),
                     ])
                     ->columnSpanFull()

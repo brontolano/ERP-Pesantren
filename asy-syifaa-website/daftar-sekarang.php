@@ -510,6 +510,14 @@ header('Expires: 0');
 
                             <div class="row g-3">
                                 <div class="col-12">
+                                    <label class="form-label small fw-bold text-muted">Gunakan alamat yang sama</label>
+                                    <select class="form-select" id="sumberAlamatSantri" onchange="copyAlamatSantri()">
+                                        <option value="">Tidak, isi manual</option>
+                                        <option value="ayah">Sama dengan Ayah</option>
+                                        <option value="ibu">Sama dengan Ibu</option>
+                                    </select>
+                                </div>
+                                <div class="col-12">
                                     <div class="form-floating">
                                         <textarea class="form-control" name="alamat_jalan" id="alamatJalan" style="height: 80px" placeholder="Alamat" required></textarea>
                                         <label>Alamat Jalan (RT/RW, Gang, No. Rumah)</label>
@@ -758,6 +766,43 @@ header('Expires: 0');
       }
   }
 
+  function copyAlamatSantri() {
+      const source = document.getElementById('sumberAlamatSantri')?.value || '';
+      const alamatSantri = document.getElementById('alamatJalan');
+      const santriSelectIds = ['wProvinsi', 'wKota', 'wKecamatan', 'wDesa'];
+      const mapBySource = {
+        ayah: [
+          ['alamatAyahJalan', 'alamatJalan'],
+          ['aProvinsi', 'wProvinsi'],
+          ['aKota', 'wKota'],
+          ['aKecamatan', 'wKecamatan'],
+          ['aDesa', 'wDesa'],
+          ['aKodePos', 'wKodePos']
+        ],
+        ibu: [
+          ['alamatIbuJalan', 'alamatJalan'],
+          ['iProvinsi', 'wProvinsi'],
+          ['iKota', 'wKota'],
+          ['iKecamatan', 'wKecamatan'],
+          ['iDesa', 'wDesa'],
+          ['iKodePos', 'wKodePos']
+        ]
+      };
+      const mapIds = mapBySource[source] || [];
+      const lock = source === 'ayah' || source === 'ibu';
+      if (alamatSantri) alamatSantri.readOnly = lock;
+      santriSelectIds.forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.disabled = lock;
+      });
+      mapIds.forEach(([src, dst]) => {
+          const srcEl = document.getElementById(src);
+          const dstEl = document.getElementById(dst);
+          if (!srcEl || !dstEl) return;
+          dstEl.value = srcEl.value;
+      });
+  }
+
   // ── Cascading Wilayah Select ──────────────────────────────────
   (function() {
     const apiBase = (window.ASF_API_BASE || '') + '/api/v1';
@@ -907,6 +952,15 @@ header('Expires: 0');
               }
               if (!noWaPeserta || !isValidGuardianPhone(noWaPeserta)) {
                   alert("Nomor WhatsApp peserta tidak valid. Gunakan format 08xxxxxxxxxx.");
+                  return;
+              }
+              const parentWilayahRequired = [
+                  'alamat_ayah_province_code', 'alamat_ayah_city_code', 'alamat_ayah_district_code', 'alamat_ayah_village_code',
+                  'alamat_ibu_province_code', 'alamat_ibu_city_code', 'alamat_ibu_district_code', 'alamat_ibu_village_code'
+              ];
+              const missingParentWilayah = parentWilayahRequired.filter((k) => !String(fd.get(k) || '').trim());
+              if (missingParentWilayah.length > 0) {
+                  alert("Alamat Ayah/Ibu belum lengkap. Mohon pilih Provinsi, Kota, Kecamatan, dan Desa.");
                   return;
               }
 
