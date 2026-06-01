@@ -898,7 +898,8 @@ header('Expires: 0');
       const r = await fetch(url, { headers: { 'Accept': 'application/json' } });
       if (r.ok) {
         const j = await r.json();
-        return j.data || [];
+        const items = Array.isArray(j?.data) ? j.data : [];
+        if (items.length > 0) return items;
       }
       if (!fallbackPath) throw new Error('Gagal memuat wilayah');
       const rf = await fetch(wilayahFallbackBase + fallbackPath, { headers: { 'Accept': 'application/json' } });
@@ -955,7 +956,8 @@ header('Expires: 0');
         const r = await fetch(url, { headers: { 'Accept': 'application/json' } });
         if (r.ok) {
           const j = await r.json();
-          return j.data || [];
+          const items = Array.isArray(j?.data) ? j.data : [];
+          if (items.length > 0) return items;
         }
         if (!fallbackPath) throw new Error('Gagal memuat wilayah');
         const rf = await fetch(wilayahFallbackBase + fallbackPath, { headers: { 'Accept': 'application/json' } });
