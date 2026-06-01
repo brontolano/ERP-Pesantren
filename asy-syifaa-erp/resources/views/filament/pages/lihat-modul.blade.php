@@ -1,66 +1,65 @@
 <x-filament-panels::page>
-    <div class="space-y-6">
-        {{-- Summary --}}
+    <div class="space-y-8">
+        {{-- Summary Bar --}}
         @php
             $totalModules = collect($this->modules)->pluck('modules')->flatten(1)->count();
             $activeModules = collect($this->modules)->pluck('modules')->flatten(1)->where('active', true)->count();
+            $activePct = $totalModules > 0 ? round(($activeModules / $totalModules) * 100) : 0;
         @endphp
-        <p class="text-sm text-gray-500 dark:text-gray-400">
-            <span class="font-semibold text-gray-900 dark:text-white">{{ $activeModules }}</span> modul aktif dari
-            <span class="font-semibold text-gray-900 dark:text-white">{{ $totalModules }}</span> total
-        </p>
+        <div class="flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm">
+            <div class="flex-1">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="text-2xl font-bold text-gray-900 dark:text-white">{{ $activeModules }}</span>
+                    <span class="text-sm text-gray-400">/ {{ $totalModules }} modul</span>
+                    <span class="ml-2 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300">{{ $activePct }}% aktif</span>
+                </div>
+                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                    <div class="bg-emerald-500 h-2 rounded-full transition-all duration-500" style="width: {{ $activePct }}%"></div>
+                </div>
+            </div>
+        </div>
 
         {{-- Module Groups --}}
         @foreach($this->modules as $group)
         <div>
-            <div class="flex items-center gap-3 mb-3">
+            <div class="flex items-center gap-3 mb-4">
                 <h2 class="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ $group['group'] }}</h2>
                 <div class="flex-1 h-px bg-gray-200 dark:bg-gray-700"></div>
+                <span class="text-xs text-gray-400">{{ collect($group['modules'])->where('active', true)->count() }} aktif</span>
             </div>
 
-            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px;">
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
                 @foreach($group['modules'] as $module)
                 @php
                     $isActive = $module['active'];
                     $color = $module['color'];
-                    $iconBg = $isActive ? match($color) {
-                        'emerald' => 'background: #d1fae5; color: #059669;',
-                        'sky' => 'background: #e0f2fe; color: #0284c7;',
-                        'violet' => 'background: #ede9fe; color: #7c3aed;',
-                        'amber' => 'background: #fef3c7; color: #d97706;',
-                        'rose' => 'background: #ffe4e6; color: #e11d48;',
-                        default => 'background: #f3f4f6; color: #6b7280;',
-                    } : 'background: #f3f4f6; color: #9ca3af;';
-                    $iconBgDark = $isActive ? match($color) {
-                        'emerald' => 'background: rgba(16,185,129,0.15); color: #34d399;',
-                        'sky' => 'background: rgba(14,165,233,0.15); color: #38bdf8;',
-                        'violet' => 'background: rgba(139,92,246,0.15); color: #a78bfa;',
-                        'amber' => 'background: rgba(245,158,11,0.15); color: #fbbf24;',
-                        'rose' => 'background: rgba(244,63,94,0.15); color: #fb7185;',
-                        default => 'background: rgba(107,114,128,0.15); color: #9ca3af;',
-                    } : 'background: rgba(107,114,128,0.1); color: #6b7280;';
+                    $colorClasses = match($color) {
+                        'emerald' => ['bg' => 'bg-emerald-50 dark:bg-emerald-900/20', 'icon' => 'text-emerald-600 dark:text-emerald-400', 'ring' => 'hover:ring-emerald-300 dark:hover:ring-emerald-700'],
+                        'sky' => ['bg' => 'bg-sky-50 dark:bg-sky-900/20', 'icon' => 'text-sky-600 dark:text-sky-400', 'ring' => 'hover:ring-sky-300 dark:hover:ring-sky-700'],
+                        'violet' => ['bg' => 'bg-violet-50 dark:bg-violet-900/20', 'icon' => 'text-violet-600 dark:text-violet-400', 'ring' => 'hover:ring-violet-300 dark:hover:ring-violet-700'],
+                        'amber' => ['bg' => 'bg-amber-50 dark:bg-amber-900/20', 'icon' => 'text-amber-600 dark:text-amber-400', 'ring' => 'hover:ring-amber-300 dark:hover:ring-amber-700'],
+                        'rose' => ['bg' => 'bg-rose-50 dark:bg-rose-900/20', 'icon' => 'text-rose-600 dark:text-rose-400', 'ring' => 'hover:ring-rose-300 dark:hover:ring-rose-700'],
+                        default => ['bg' => 'bg-gray-50 dark:bg-gray-800', 'icon' => 'text-gray-400 dark:text-gray-500', 'ring' => ''],
+                    };
                 @endphp
 
                 @if($isActive)
                 <a href="{{ $module['url'] }}" wire:navigate
-                   class="group flex flex-col items-center text-center p-3 rounded-xl bg-white dark:bg-gray-900 hover:shadow-md transition-all duration-150 hover:-translate-y-0.5"
-                   style="border: 1px solid rgba(0,0,0,0.08);"
-                   onmouseenter="this.style.borderColor='rgba(0,0,0,0.2)'" onmouseleave="this.style.borderColor='rgba(0,0,0,0.08)'">
-                    <div class="w-10 h-10 rounded-lg flex items-center justify-center mb-2 transition-transform duration-150 group-hover:scale-110 dark:hidden" style="{{ $iconBg }}">
-                        <x-filament::icon :icon="$module['icon']" class="w-5 h-5" style="color: inherit;" />
+                   class="group flex flex-col items-center text-center p-4 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md hover:ring-2 {{ $colorClasses['ring'] }} transition-all duration-200 hover:-translate-y-0.5">
+                    <div class="w-12 h-12 rounded-xl {{ $colorClasses['bg'] }} flex items-center justify-center mb-3 transition-transform duration-200 group-hover:scale-110">
+                        <x-filament::icon :icon="$module['icon']" class="w-6 h-6 {{ $colorClasses['icon'] }}" />
                     </div>
-                    <div class="w-10 h-10 rounded-lg items-center justify-center mb-2 transition-transform duration-150 group-hover:scale-110 hidden dark:flex" style="{{ $iconBgDark }}">
-                        <x-filament::icon :icon="$module['icon']" class="w-5 h-5" style="color: inherit;" />
-                    </div>
-                    <span class="text-xs font-medium text-gray-700 dark:text-gray-300 leading-tight">{{ $module['name'] }}</span>
+                    <span class="text-xs font-semibold text-gray-700 dark:text-gray-300 leading-tight">{{ $module['name'] }}</span>
+                    <span class="text-[10px] text-gray-400 dark:text-gray-500 mt-1 leading-tight">{{ $module['description'] }}</span>
                 </a>
                 @else
-                <div class="flex flex-col items-center text-center p-3 rounded-xl opacity-40 cursor-not-allowed select-none"
-                     style="background: rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.05);">
-                    <div class="w-10 h-10 rounded-lg flex items-center justify-center mb-2" style="{{ $iconBg }}">
-                        <x-filament::icon :icon="$module['icon']" class="w-5 h-5" style="color: inherit;" />
+                <div class="relative flex flex-col items-center text-center p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-dashed border-gray-300 dark:border-gray-700 opacity-60 cursor-not-allowed select-none">
+                    <span class="absolute top-2 right-2 px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-400">SOON</span>
+                    <div class="w-12 h-12 rounded-xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center mb-3">
+                        <x-filament::icon :icon="$module['icon']" class="w-6 h-6 text-gray-400 dark:text-gray-500" />
                     </div>
-                    <span class="text-xs font-medium text-gray-400 dark:text-gray-600 leading-tight">{{ $module['name'] }}</span>
+                    <span class="text-xs font-semibold text-gray-400 dark:text-gray-500 leading-tight">{{ $module['name'] }}</span>
+                    <span class="text-[10px] text-gray-300 dark:text-gray-600 mt-1 leading-tight">{{ $module['description'] }}</span>
                 </div>
                 @endif
                 @endforeach

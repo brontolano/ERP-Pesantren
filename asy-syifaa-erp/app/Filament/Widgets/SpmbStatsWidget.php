@@ -32,23 +32,34 @@ class SpmbStatsWidget extends BaseWidget
         $enrolled = (clone $query)->where('status', 'enrolled')->count();
         $docComplete = (clone $query)->where('document_status', 'complete')->count();
 
+        $waitingCount = $pending + $registered;
+        $waitingPct = $total > 0 ? round(($waitingCount / $total) * 100) : 0;
+        $lulusPct = $total > 0 ? round(($lulus / $total) * 100) : 0;
+
         return [
             Stat::make('Total Pendaftar', $total)
-                ->description('Tahun ajaran ' . $currentYear)
+                ->description('TA ' . $currentYear)
+                ->descriptionIcon('heroicon-o-calendar')
                 ->icon('heroicon-o-academic-cap')
                 ->color('primary'),
-            Stat::make('Menunggu Verifikasi', $pending + $registered)
-                ->description('Perlu ditindaklanjuti')
+            Stat::make('Menunggu Verifikasi', $waitingCount)
+                ->description($waitingPct . '% dari total')
+                ->descriptionIcon('heroicon-o-arrow-trending-up')
                 ->icon('heroicon-o-clock')
                 ->color('warning'),
             Stat::make('Dokumen Lengkap', $docComplete)
+                ->description('Siap diseleksi')
+                ->descriptionIcon('heroicon-o-check-badge')
                 ->icon('heroicon-o-document-check')
                 ->color('info'),
             Stat::make('Lulus Seleksi', $lulus)
-                ->description("Cadangan: {$cadangan}")
+                ->description("Cadangan: {$cadangan} · Rate: {$lulusPct}%")
+                ->descriptionIcon('heroicon-o-trophy')
                 ->icon('heroicon-o-check-circle')
                 ->color('success'),
-            Stat::make('Santri Aktif', $enrolled)
+            Stat::make('Santri Terdaftar', $enrolled)
+                ->description('Status enrolled')
+                ->descriptionIcon('heroicon-o-user-group')
                 ->icon('heroicon-o-user-group')
                 ->color('success'),
             Stat::make('Tidak Lulus', $tidakLulus)
