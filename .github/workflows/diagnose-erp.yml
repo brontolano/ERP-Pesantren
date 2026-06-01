@@ -1,0 +1,40 @@
+name: Diagnose ERP
+
+on:
+  workflow_dispatch:
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Inspect ERP containers
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            echo "=== DOCKER CONTAINERS ==="
+            docker ps -a --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" | grep -i erp
+            echo "=== ERP APP LOGS (last 30) ==="
+            docker logs erp-app --tail 30 2>&1 || echo "No erp-app container"
+            echo "=== ERP NGINX LOGS ==="
+            docker logs erp-nginx --tail 10 2>&1 || echo "No erp-nginx container"
+            echo "=== DOCKER COMPOSE ==="
+            cd /opt/asy-syifaa/erp
+            cat docker-compose.yml
+            echo "=== SRC FILES ==="
+            ls -la /opt/asy-syifaa/erp/src/ | head -15
+            echo "=== .ENV EXISTS ==="
+            test -f /opt/asy-syifaa/erp/src/.env && echo "YES" || echo "NO"
+            echo "=== PHP TEST ==="
+            docker compose exec -T app php -v 2>&1 || echo "Cannot exec into app"
+            echo "=== ARTISAN TEST ==="
+            docker compose exec -T app php artisan --version 2>&1 || echo "Cannot run artisan"
+            echo "=== VENDOR DIR ==="
+            docker compose exec -T app ls /var/www/html/vendor/autoload.php 2>&1 || echo "No vendor/autoload.php"
+            echo "=== APP PERMISSIONS ==="
+            ls -la /opt/asy-syifaa/erp/src/app/ 2>/dev/null | head -5
+            echo "=== STORAGE PERMS ==="
+            ls -la /opt/asy-syifaa/erp/src/storage/ 2>/dev/null | head -5
