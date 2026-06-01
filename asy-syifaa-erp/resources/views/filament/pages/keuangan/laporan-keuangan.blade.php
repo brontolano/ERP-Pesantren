@@ -1,19 +1,23 @@
 <x-filament-panels::page>
     <div class="space-y-6">
         {{-- Tab Navigation --}}
-        <div class="flex flex-wrap gap-2 border-b border-gray-200 dark:border-gray-700 pb-2">
+        <div class="flex flex-wrap gap-1 bg-gray-100 dark:bg-gray-800 rounded-xl p-1">
             @foreach([
-                'dashboard' => 'Dashboard KPI',
-                'ringkasan' => 'Ringkasan',
-                'tunggakan' => 'Daftar Tunggakan',
-                'matrix' => 'Matrix Syahriyyah',
-                'rekap_bulan' => 'Rekap Per Bulan',
-                'transaksi' => 'Buku Setoran',
-            ] as $key => $label)
+                'dashboard' => ['label' => 'Dashboard KPI', 'icon' => 'heroicon-o-chart-bar-square'],
+                'ringkasan' => ['label' => 'Ringkasan', 'icon' => 'heroicon-o-clipboard-document-list'],
+                'tunggakan' => ['label' => 'Tunggakan', 'icon' => 'heroicon-o-exclamation-triangle'],
+                'matrix' => ['label' => 'Matrix SPP', 'icon' => 'heroicon-o-table-cells'],
+                'rekap_bulan' => ['label' => 'Rekap Bulan', 'icon' => 'heroicon-o-calendar-days'],
+                'transaksi' => ['label' => 'Buku Setoran', 'icon' => 'heroicon-o-book-open'],
+            ] as $key => $tab)
                 <button wire:click="$set('reportType', '{{ $key }}')"
-                    class="px-4 py-2 rounded-t-lg text-sm font-semibold transition
-                    {{ $reportType === $key ? 'bg-primary-600 text-white' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400' }}">
-                    {{ $label }}
+                    @class([
+                        'flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-200',
+                        'bg-white dark:bg-gray-700 text-primary-600 dark:text-primary-400 shadow-sm' => $reportType === $key,
+                        'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-white/50 dark:hover:bg-gray-700/50' => $reportType !== $key,
+                    ])>
+                    <x-filament::icon :icon="$tab['icon']" class="w-4 h-4" />
+                    <span class="hidden sm:inline">{{ $tab['label'] }}</span>
                 </button>
             @endforeach
         </div>

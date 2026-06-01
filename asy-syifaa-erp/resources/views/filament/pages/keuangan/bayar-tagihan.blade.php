@@ -247,11 +247,18 @@
                     </div>
 
                     <button wire:click="processPayment" wire:confirm="Yakin memproses pembayaran Rp {{ number_format($amount ?? 0, 0, ',', '.') }}?"
-                        class="mt-4 w-full px-6 py-3 rounded-lg bg-green-600 text-white font-bold text-lg hover:bg-green-500 transition flex items-center justify-center gap-2"
+                        @class([
+                            'mt-4 w-full px-6 py-3 rounded-lg font-bold text-lg transition-all duration-200 flex items-center justify-center gap-2',
+                            'bg-green-600 text-white hover:bg-green-500 active:scale-[0.98] shadow-lg shadow-green-600/20' => !empty($amount) && !empty($payment_channel),
+                            'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed' => empty($amount) || empty($payment_channel),
+                        ])
                         {{ empty($amount) || empty($payment_channel) ? 'disabled' : '' }}>
                         <x-heroicon-o-check-circle class="w-5 h-5"/>
                         Proses Pembayaran
                     </button>
+                    @if(empty($amount) || empty($payment_channel))
+                    <p class="text-xs text-center text-gray-400 mt-2">Isi nominal dan pilih metode pembayaran</p>
+                    @endif
                 </div>
             </div>
         </div>
