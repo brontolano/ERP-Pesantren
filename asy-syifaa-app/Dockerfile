@@ -2,10 +2,10 @@ FROM node:20-alpine as builder
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY pwa/package*.json ./
 RUN npm install
 
-COPY . .
+COPY pwa . ./
 
 ARG VITE_API_BASE=https://api.asy-syifaa.com
 ARG VITE_ERP_BASE=https://erp.asy-syifaa.com
