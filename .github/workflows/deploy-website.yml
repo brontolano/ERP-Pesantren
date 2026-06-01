@@ -23,6 +23,7 @@ jobs:
           [ -z "${{ secrets.HOSTINGER_USER }}" ] && missing="$missing HOSTINGER_USER"
           [ -z "${{ secrets.HOSTINGER_SSH_KEY }}" ] && missing="$missing HOSTINGER_SSH_KEY"
           [ -z "${{ secrets.HOSTINGER_PORT }}" ] && missing="$missing HOSTINGER_PORT"
+          [ -z "${{ secrets.HOSTINGER_DEPLOY_PATH }}" ] && missing="$missing HOSTINGER_DEPLOY_PATH"
           if [ -n "$missing" ]; then
             echo "::error::Missing secrets:$missing"
             exit 1
@@ -41,7 +42,7 @@ jobs:
 
           port: ${{ secrets.HOSTINGER_PORT }}
           source: "asy-syifaa-website/*"
-          target: ${{ secrets.HOSTINGER_DEPLOY_PATH || 'public_html' }}
+          target: ${{ secrets.HOSTINGER_DEPLOY_PATH }}
           strip_components: 1
           overwrite: true
 
@@ -58,7 +59,6 @@ jobs:
           port: ${{ secrets.HOSTINGER_PORT }}
           script: |
             TARGET="${{ secrets.HOSTINGER_DEPLOY_PATH }}"
-            if [ -z "$TARGET" ]; then TARGET="$HOME/public_html"; fi
 
             if [ -f "$TARGET/index.php" ] || [ -f "$TARGET/index.html" ]; then
               echo "==> Website deploy complete at $TARGET"
