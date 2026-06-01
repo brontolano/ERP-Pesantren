@@ -3,13 +3,9 @@
 namespace App\Filament\Pages;
 
 use Filament\Pages\Dashboard as BaseDashboard;
-use Illuminate\Http\RedirectResponse;
-use Livewire\Attributes\On;
 
 class Dashboard extends BaseDashboard
 {
-    protected static ?string $navigationIcon = 'heroicon-o-chart-bar-square';
-
     public static function canAccess(): bool
     {
         $user = auth('erp')->user();
