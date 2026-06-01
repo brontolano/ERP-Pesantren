@@ -884,6 +884,7 @@ header('Expires: 0');
   // ── Cascading Wilayah Select ──────────────────────────────────
   (function() {
     const apiBase = (window.ASF_API_BASE || '') + '/api/v1';
+    const wilayahFallbackBase = 'https://raw.githubusercontent.com/cahyadsn/wilayah_kodepos/master/data';
     const prov = document.getElementById('wProvinsi');
     const city = document.getElementById('wKota');
     const dist = document.getElementById('wKecamatan');
@@ -893,10 +894,16 @@ header('Expires: 0');
 
     let villagesCache = [];
 
-    async function fj(url) {
-      const r = await fetch(url);
-      const j = await r.json();
-      return j.data || [];
+    async function fj(url, fallbackPath = '') {
+      const r = await fetch(url, { headers: { 'Accept': 'application/json' } });
+      if (r.ok) {
+        const j = await r.json();
+        return j.data || [];
+      }
+      if (!fallbackPath) throw new Error('Gagal memuat wilayah');
+      const rf = await fetch(wilayahFallbackBase + fallbackPath, { headers: { 'Accept': 'application/json' } });
+      if (!rf.ok) throw new Error('Fallback wilayah gagal dimuat');
+      return await rf.json();
     }
     function fill(el, items, valKey, lblKey) {
       el.innerHTML = '<option value="">— Pilih —</option>';
@@ -912,19 +919,21 @@ header('Expires: 0');
       if (post) post.value = '';
     }
 
-    fj(apiBase + '/wilayah/provinces').then(d => fill(prov, d, 'code', 'name'));
+    fj(apiBase + '/wilayah/provinces', '/provinces.json')
+      .then(d => fill(prov, d, 'code', 'name'))
+      .catch(() => { prov.innerHTML = '<option value="">Gagal memuat provinsi</option>'; prov.disabled = true; });
 
     prov.addEventListener('change', function() {
       reset(city, dist, vill); villagesCache = [];
-      if (this.value) fj(apiBase + '/wilayah/cities/' + this.value).then(d => fill(city, d, 'code', 'name'));
+      if (this.value) fj(apiBase + '/wilayah/cities/' + this.value, '/regencies/' + this.value + '.json').then(d => fill(city, d, 'code', 'name'));
     });
     city.addEventListener('change', function() {
       reset(dist, vill); villagesCache = [];
-      if (this.value) fj(apiBase + '/wilayah/districts/' + this.value).then(d => fill(dist, d, 'code', 'name'));
+      if (this.value) fj(apiBase + '/wilayah/districts/' + this.value, '/districts/' + this.value + '.json').then(d => fill(dist, d, 'code', 'name'));
     });
     dist.addEventListener('change', function() {
       reset(vill); villagesCache = [];
-      if (this.value) fj(apiBase + '/wilayah/villages/' + this.value).then(d => { villagesCache = d; fill(vill, d, 'code', 'name'); });
+      if (this.value) fj(apiBase + '/wilayah/villages/' + this.value, '/villages/' + this.value + '.json').then(d => { villagesCache = d; fill(vill, d, 'code', 'name'); });
     });
     vill.addEventListener('change', function() {
       const match = villagesCache.find(v => v.code === this.value);
@@ -933,6 +942,7 @@ header('Expires: 0');
   })();
   (function() {
     const apiBase = (window.ASF_API_BASE || '') + '/api/v1';
+    const wilayahFallbackBase = 'https://raw.githubusercontent.com/cahyadsn/wilayah_kodepos/master/data';
     function bind(prefix) {
       const prov = document.getElementById(prefix + 'Provinsi');
       const city = document.getElementById(prefix + 'Kota');
@@ -941,17 +951,29 @@ header('Expires: 0');
       const post = document.getElementById(prefix + 'KodePos');
       if (!prov) return;
       let villagesCache = [];
-      async function fj(url) { const r = await fetch(url); const j = await r.json(); return j.data || []; }
+      async function fj(url, fallbackPath = '') {
+        const r = await fetch(url, { headers: { 'Accept': 'application/json' } });
+        if (r.ok) {
+          const j = await r.json();
+          return j.data || [];
+        }
+        if (!fallbackPath) throw new Error('Gagal memuat wilayah');
+        const rf = await fetch(wilayahFallbackBase + fallbackPath, { headers: { 'Accept': 'application/json' } });
+        if (!rf.ok) throw new Error('Fallback wilayah gagal dimuat');
+        return await rf.json();
+      }
       function fill(el, items, valKey, lblKey) {
         el.innerHTML = '<option value="">— Pilih —</option>';
         items.forEach(i => { const o = document.createElement('option'); o.value = i[valKey]; o.textContent = i[lblKey]; el.appendChild(o); });
         el.disabled = items.length === 0;
       }
       function reset(...els) { els.forEach(el => { el.innerHTML = '<option value="">— Pilih —</option>'; el.disabled = true; }); if (post) post.value = ''; }
-      fj(apiBase + '/wilayah/provinces').then(d => fill(prov, d, 'code', 'name'));
-      prov.addEventListener('change', function() { reset(city, dist, vill); villagesCache = []; if (this.value) fj(apiBase + '/wilayah/cities/' + this.value).then(d => fill(city, d, 'code', 'name')); });
-      city.addEventListener('change', function() { reset(dist, vill); villagesCache = []; if (this.value) fj(apiBase + '/wilayah/districts/' + this.value).then(d => fill(dist, d, 'code', 'name')); });
-      dist.addEventListener('change', function() { reset(vill); villagesCache = []; if (this.value) fj(apiBase + '/wilayah/villages/' + this.value).then(d => { villagesCache = d; fill(vill, d, 'code', 'name'); }); });
+      fj(apiBase + '/wilayah/provinces', '/provinces.json')
+        .then(d => fill(prov, d, 'code', 'name'))
+        .catch(() => { prov.innerHTML = '<option value="">Gagal memuat provinsi</option>'; prov.disabled = true; });
+      prov.addEventListener('change', function() { reset(city, dist, vill); villagesCache = []; if (this.value) fj(apiBase + '/wilayah/cities/' + this.value, '/regencies/' + this.value + '.json').then(d => fill(city, d, 'code', 'name')); });
+      city.addEventListener('change', function() { reset(dist, vill); villagesCache = []; if (this.value) fj(apiBase + '/wilayah/districts/' + this.value, '/districts/' + this.value + '.json').then(d => fill(dist, d, 'code', 'name')); });
+      dist.addEventListener('change', function() { reset(vill); villagesCache = []; if (this.value) fj(apiBase + '/wilayah/villages/' + this.value, '/villages/' + this.value + '.json').then(d => { villagesCache = d; fill(vill, d, 'code', 'name'); }); });
       vill.addEventListener('change', function() { const match = villagesCache.find(v => v.code === this.value); if (post) post.value = match?.postal_code || ''; });
     }
     bind('a');
