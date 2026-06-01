@@ -22,12 +22,16 @@ jobs:
           [ -z "${{ secrets.HOSTINGER_HOST }}" ] && missing="$missing HOSTINGER_HOST"
           [ -z "${{ secrets.HOSTINGER_USER }}" ] && missing="$missing HOSTINGER_USER"
           [ -z "${{ secrets.HOSTINGER_SSH_KEY }}" ] && missing="$missing HOSTINGER_SSH_KEY"
-          [ -z "${{ secrets.HOSTINGER_SSH_PASSPHRASE }}" ] && missing="$missing HOSTINGER_SSH_PASSPHRASE"
           [ -z "${{ secrets.HOSTINGER_PORT }}" ] && missing="$missing HOSTINGER_PORT"
           [ -z "${{ secrets.HOSTINGER_DEPLOY_PATH }}" ] && missing="$missing HOSTINGER_DEPLOY_PATH"
           if [ -n "$missing" ]; then
             echo "::error::Missing secrets:$missing"
             exit 1
+          fi
+          if [ -n "${{ secrets.HOSTINGER_SSH_PASSPHRASE }}" ]; then
+            echo "==> HOSTINGER_SSH_PASSPHRASE detected (encrypted key mode)"
+          else
+            echo "==> HOSTINGER_SSH_PASSPHRASE empty (non-encrypted key mode)"
           fi
 
       - uses: actions/checkout@v5
@@ -40,7 +44,7 @@ jobs:
           host: ${{ secrets.HOSTINGER_HOST }}
           username: ${{ secrets.HOSTINGER_USER }}
           key: ${{ secrets.HOSTINGER_SSH_KEY }}
-          passphrase: ${{ secrets.HOSTINGER_SSH_PASSPHRASE }}
+          passphrase: ${{ secrets.HOSTINGER_SSH_PASSPHRASE || '' }}
 
           port: ${{ secrets.HOSTINGER_PORT }}
           source: "asy-syifaa-website/*"
@@ -57,7 +61,7 @@ jobs:
           host: ${{ secrets.HOSTINGER_HOST }}
           username: ${{ secrets.HOSTINGER_USER }}
           key: ${{ secrets.HOSTINGER_SSH_KEY }}
-          passphrase: ${{ secrets.HOSTINGER_SSH_PASSPHRASE }}
+          passphrase: ${{ secrets.HOSTINGER_SSH_PASSPHRASE || '' }}
 
           port: ${{ secrets.HOSTINGER_PORT }}
           script: |

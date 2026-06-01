@@ -73,6 +73,20 @@ Isi utama:
 - Daftar workflow yang harus ditrigger.
 - Checklist verifikasi post-deploy.
 
+### F. Stabilization Update: Website Deploy Passphrase Optional
+File: `.github/workflows/deploy-website.yml`
+
+Perubahan utama:
+- `HOSTINGER_SSH_PASSPHRASE` diubah menjadi **opsional** (tidak lagi fail-fast saat kosong).
+- Log mode autentikasi diperjelas:
+  - encrypted key mode (passphrase terdeteksi)
+  - non-encrypted key mode (passphrase kosong)
+- `passphrase` tetap dikirim ke action, default kosong jika secret tidak ada.
+
+Dampak:
+- Menghilangkan false blocker `Missing secrets: HOSTINGER_SSH_PASSPHRASE`.
+- Jika deploy masih gagal, akar masalah dipersempit ke mismatch `HOSTINGER_USER` / `HOSTINGER_SSH_KEY` / `authorized_keys`.
+
 ## 3) Status terhadap Plan
 
 - Inventaris + backup: **tersedia dalam skrip**.
