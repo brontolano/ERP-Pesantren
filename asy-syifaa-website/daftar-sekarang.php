@@ -913,6 +913,10 @@ header('Expires: 0');
       return toArray(raw);
     }
     function fill(el, items, valKey, lblKey) {
+      if (!Array.isArray(items)) {
+        if (items && typeof items === 'object') items = Object.values(items);
+        else items = [];
+      }
       el.innerHTML = '<option value="">— Pilih —</option>';
       items.forEach(i => {
         const o = document.createElement('option');
@@ -977,6 +981,10 @@ header('Expires: 0');
         return toArray(raw);
       }
       function fill(el, items, valKey, lblKey) {
+        if (!Array.isArray(items)) {
+          if (items && typeof items === 'object') items = Object.values(items);
+          else items = [];
+        }
         el.innerHTML = '<option value="">— Pilih —</option>';
         items.forEach(i => { const o = document.createElement('option'); o.value = i[valKey]; o.textContent = i[lblKey]; el.appendChild(o); });
         el.disabled = items.length === 0;
