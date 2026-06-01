@@ -23,10 +23,10 @@
         @endif
 
         @foreach($registrations as $reg)
-            {{-- ====== KARTU PESERTA PPDB (VIRTUAL CARD) ====== --}}
+            {{-- ====== KARTU PESERTA PPDB ====== --}}
             <div class="rounded-2xl overflow-hidden shadow-xl mb-6 border border-gray-200 dark:border-gray-700">
-                {{-- Header Card --}}
-                <div class="bg-gradient-to-r from-emerald-700 via-emerald-600 to-emerald-500 px-6 py-4">
+                {{-- Header --}}
+                <div class="bg-gradient-to-r from-emerald-700 via-emerald-600 to-emerald-500 px-4 sm:px-6 py-4">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-3">
                             <div class="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center">
@@ -40,107 +40,56 @@
                         @php
                             $verified = in_array($reg->status, ['lulus', 'enrolled']);
                             $badgeColor = $verified ? 'bg-emerald-400 text-emerald-900' : 'bg-yellow-400 text-yellow-900';
-                            $badgeText = $verified ? 'TERVERIFIKASI' : $reg->status_label;
+                            $badgeText = $verified ? 'TERVERIFIKASI' : strtoupper($reg->status_label);
                         @endphp
-                        <span class="px-3 py-1 rounded-full text-xs font-bold {{ $badgeColor }}">
+                        <span class="hidden sm:inline-flex px-3 py-1 rounded-full text-xs font-bold {{ $badgeColor }}">
                             {{ $badgeText }}
                         </span>
                     </div>
                 </div>
 
-                {{-- Body Card --}}
-                <div class="bg-white dark:bg-gray-800 px-6 py-6">
-                    <div class="flex flex-col md:flex-row gap-6">
+                {{-- Body --}}
+                <div class="bg-white dark:bg-gray-800 px-4 sm:px-6 py-6">
+                    <div class="flex flex-col sm:flex-row gap-6">
                         {{-- Foto / Avatar --}}
-                        <div class="flex-shrink-0">
-                            <div class="w-36 h-44 rounded-xl bg-gray-100 dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 overflow-hidden flex items-center justify-center">
-                                @if($reg->foto_url)
-                                    @php
-                                        $user = auth('erp')->user();
-                                        $canViewFemalePhoto = $reg->gender !== 'P' || ($user && $user->hasAnyRole(['Superadmin', 'Mudir']));
-                                    @endphp
-                                    @if($canViewFemalePhoto)
-                                        <img src="{{ asset('storage/' . $reg->foto_url) }}" alt="Foto" class="w-full h-full object-cover">
-                                    @else
-                                        {{-- Avatar wanita bercadar --}}
-                                        <svg viewBox="0 0 120 150" class="w-28 h-36">
-                                            <defs>
-                                                <linearGradient id="hijab{{ $reg->id }}" x1="0%" y1="0%" x2="100%" y2="100%">
-                                                    <stop offset="0%" style="stop-color:#047857"/>
-                                                    <stop offset="100%" style="stop-color:#065f46"/>
-                                                </linearGradient>
-                                            </defs>
-                                            <ellipse cx="60" cy="65" rx="50" ry="60" fill="url(#hijab{{ $reg->id }})"/>
-                                            <ellipse cx="60" cy="55" rx="30" ry="25" fill="#fde68a" opacity="0.15"/>
-                                            <ellipse cx="48" cy="52" rx="4" ry="3" fill="#1f2937"/>
-                                            <ellipse cx="72" cy="52" rx="4" ry="3" fill="#1f2937"/>
-                                            <rect x="30" y="62" width="60" height="35" rx="5" fill="url(#hijab{{ $reg->id }})" opacity="0.9"/>
-                                            <path d="M25 70 Q60 85 95 70" stroke="#065f46" stroke-width="2" fill="none"/>
-                                            <rect x="20" y="120" width="80" height="30" rx="5" fill="url(#hijab{{ $reg->id }})"/>
-                                            <text x="60" y="142" text-anchor="middle" fill="white" font-size="8" font-weight="bold">PHOTO ID</text>
-                                        </svg>
-                                    @endif
-                                @else
-                                    @if($reg->gender === 'P')
-                                        {{-- Avatar wanita bercadar (default) --}}
-                                        <svg viewBox="0 0 120 150" class="w-28 h-36">
-                                            <defs>
-                                                <linearGradient id="hijabDef{{ $reg->id }}" x1="0%" y1="0%" x2="100%" y2="100%">
-                                                    <stop offset="0%" style="stop-color:#047857"/>
-                                                    <stop offset="100%" style="stop-color:#065f46"/>
-                                                </linearGradient>
-                                            </defs>
-                                            <ellipse cx="60" cy="65" rx="50" ry="60" fill="url(#hijabDef{{ $reg->id }})"/>
-                                            <ellipse cx="60" cy="55" rx="30" ry="25" fill="#fde68a" opacity="0.15"/>
-                                            <ellipse cx="48" cy="52" rx="4" ry="3" fill="#1f2937"/>
-                                            <ellipse cx="72" cy="52" rx="4" ry="3" fill="#1f2937"/>
-                                            <rect x="30" y="62" width="60" height="35" rx="5" fill="url(#hijabDef{{ $reg->id }})" opacity="0.9"/>
-                                            <path d="M25 70 Q60 85 95 70" stroke="#065f46" stroke-width="2" fill="none"/>
-                                            <rect x="20" y="120" width="80" height="30" rx="5" fill="url(#hijabDef{{ $reg->id }})"/>
-                                            <text x="60" y="142" text-anchor="middle" fill="white" font-size="8" font-weight="bold">PHOTO ID</text>
-                                        </svg>
-                                    @else
-                                        {{-- Avatar laki-laki --}}
-                                        <svg viewBox="0 0 120 150" class="w-28 h-36">
-                                            <circle cx="60" cy="50" r="30" fill="#d1d5db"/>
-                                            <circle cx="60" cy="45" r="22" fill="#fbbf24" opacity="0.15"/>
-                                            <circle cx="60" cy="45" r="20" fill="#9ca3af"/>
-                                            <ellipse cx="50" cy="43" rx="3" ry="2.5" fill="#1f2937"/>
-                                            <ellipse cx="70" cy="43" rx="3" ry="2.5" fill="#1f2937"/>
-                                            <path d="M52 55 Q60 60 68 55" stroke="#6b7280" stroke-width="2" fill="none"/>
-                                            <path d="M35 30 Q45 15 60 18 Q75 15 85 30" stroke="#6b7280" stroke-width="3" fill="#4b5563"/>
-                                            <rect x="25" y="85" width="70" height="50" rx="10" fill="#e5e7eb"/>
-                                            <rect x="40" y="95" width="40" height="10" rx="3" fill="#d1d5db"/>
-                                            <rect x="20" y="120" width="80" height="30" rx="5" fill="#6b7280"/>
-                                            <text x="60" y="142" text-anchor="middle" fill="white" font-size="8" font-weight="bold">PHOTO ID</text>
-                                        </svg>
-                                    @endif
-                                @endif
-                            </div>
+                        <div class="flex-shrink-0 flex justify-center sm:justify-start">
+                            @php
+                                $user = auth('erp')->user();
+                                $canViewPhoto = $reg->gender !== 'P' || ($user && $user->hasAnyRole(['Superadmin', 'Mudir']));
+                            @endphp
+                            <x-avatar-santri
+                                :gender="$reg->gender"
+                                :foto-url="$reg->foto_url"
+                                :can-view-photo="$canViewPhoto"
+                                :id="'reg-' . $reg->id"
+                            />
                         </div>
 
                         {{-- Data Peserta --}}
-                        <div class="flex-1">
+                        <div class="flex-1 text-center sm:text-left">
                             <div class="mb-4">
                                 <p class="text-xs text-emerald-600 dark:text-emerald-400 uppercase font-semibold tracking-wide">Nama Lengkap</p>
-                                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ $reg->student_name }}</h2>
+                                <h2 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{{ $reg->student_name }}</h2>
                             </div>
-
-                            <div class="space-y-2">
+                            <div class="grid grid-cols-2 gap-3">
                                 <div>
                                     <p class="text-xs text-gray-400 uppercase font-semibold">No. Registrasi</p>
-                                    <p class="text-lg font-mono font-bold text-gray-800 dark:text-gray-200">{{ $reg->registration_number }}</p>
+                                    <p class="text-sm sm:text-lg font-mono font-bold text-gray-800 dark:text-gray-200">{{ $reg->registration_number }}</p>
                                 </div>
                                 <div>
-                                    <p class="text-xs text-gray-400 uppercase font-semibold">Jalur Masuk</p>
-                                    <p class="text-lg font-semibold text-gray-800 dark:text-gray-200">Reguler</p>
+                                    <p class="text-xs text-gray-400 uppercase font-semibold">Jenis Kelamin</p>
+                                    <p class="text-sm sm:text-lg font-semibold text-gray-800 dark:text-gray-200">{{ $reg->gender === 'L' ? 'Laki-laki' : 'Perempuan' }}</p>
                                 </div>
                             </div>
-
                             <p class="mt-3 text-xs text-gray-500 dark:text-gray-400">VALIDITY: 31 DEC {{ substr($reg->academic_year, 0, 4) }}</p>
+
+                            {{-- Mobile badge --}}
+                            <span class="sm:hidden mt-3 inline-flex px-3 py-1 rounded-full text-xs font-bold {{ $badgeColor }}">
+                                {{ $badgeText }}
+                            </span>
                         </div>
 
-                        {{-- QR Code area (kanan) --}}
+                        {{-- QR Code --}}
                         @php
                             $verifyUrl = url('/verifikasi/' . $reg->registration_number);
                             $qrOptions = new \chillerlan\QRCode\QROptions([
@@ -154,7 +103,7 @@
                             ]);
                             $qrSvg = (new \chillerlan\QRCode\QRCode($qrOptions))->render($verifyUrl);
                         @endphp
-                        <div class="flex flex-col items-center gap-1 flex-shrink-0">
+                        <div class="hidden sm:flex flex-col items-center gap-1 flex-shrink-0">
                             <div class="w-28 h-28 bg-white rounded-xl border-2 border-gray-200 dark:border-gray-600 flex items-center justify-center p-1.5">
                                 {!! $qrSvg !!}
                             </div>
@@ -164,15 +113,15 @@
                 </div>
 
                 {{-- Footer --}}
-                <div class="bg-gradient-to-r from-emerald-700 to-emerald-600 px-6 py-2.5">
-                    <p class="text-xs text-emerald-100 font-semibold tracking-wider uppercase">
+                <div class="bg-gradient-to-r from-emerald-700 to-emerald-600 px-4 sm:px-6 py-2.5">
+                    <p class="text-xs text-emerald-100 font-semibold tracking-wider uppercase text-center sm:text-left">
                         Digital Identity System &bull; Asy-Syifaa Edu
                     </p>
                 </div>
             </div>
 
             {{-- ====== STATUS CARDS ====== --}}
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                 {{-- Status Pendaftaran --}}
                 <div class="rounded-xl bg-white dark:bg-gray-800 p-5 border border-gray-200 dark:border-gray-700 shadow-sm">
                     <div class="flex items-center gap-3 mb-3">
@@ -204,17 +153,15 @@
                         <span class="text-3xl font-bold text-emerald-600">{{ $reg->approved_docs }}</span>
                         <span class="text-gray-400 text-lg pb-0.5">/{{ $totalDocs }}</span>
                     </div>
-                    <div class="mt-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                        <div class="bg-emerald-500 h-2 rounded-full transition-all" style="width: {{ $reg->doc_pct }}%"></div>
+                    <div class="mt-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 overflow-hidden">
+                        <div class="bg-emerald-500 h-2.5 rounded-full transition-all duration-700 ease-out" style="width: {{ $reg->doc_pct }}%"></div>
                     </div>
                     @if(!empty($reg->missing_docs))
                         <p class="text-xs text-amber-600 dark:text-amber-400 mt-2">
-                            Belum upload {{ count($reg->missing_docs) }} dokumen.
+                            {{ count($reg->missing_docs) }} dokumen belum di-upload
                         </p>
                     @else
-                        <p class="text-xs text-emerald-600 dark:text-emerald-400 mt-2">
-                            Semua dokumen wajib sudah ter-upload.
-                        </p>
+                        <p class="text-xs text-emerald-600 dark:text-emerald-400 mt-2">Semua dokumen sudah ter-upload</p>
                     @endif
                 </div>
 
@@ -232,22 +179,56 @@
             </div>
         @endforeach
 
-        @php
-            $firstReg = $registrations->first();
-        @endphp
+        {{-- ====== CHECKLIST DOKUMEN ====== --}}
+        @php $firstReg = $registrations->first(); @endphp
         @if($firstReg && !empty($firstReg->missing_docs))
-            <x-filament::section>
-                <x-slot name="heading">Checklist Dokumen Wajib Belum Ter-upload</x-slot>
-                <ul class="list-disc pl-5 space-y-1 text-sm text-amber-700 dark:text-amber-300">
+            <x-filament::section icon="heroicon-o-exclamation-triangle" icon-color="warning">
+                <x-slot name="heading">Dokumen Wajib Belum Ter-upload</x-slot>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     @foreach($firstReg->missing_docs as $docLabel)
-                        <li>{{ $docLabel }}</li>
+                        <div class="flex items-center gap-2 p-2 rounded-lg bg-amber-50 dark:bg-amber-900/10">
+                            <x-heroicon-o-document-arrow-up class="w-4 h-4 text-amber-500 flex-shrink-0" />
+                            <span class="text-sm text-amber-700 dark:text-amber-300">{{ $docLabel }}</span>
+                        </div>
                     @endforeach
-                </ul>
+                </div>
             </x-filament::section>
         @endif
 
+        {{-- ====== INFORMASI BIAYA ====== --}}
+        <x-filament::section icon="heroicon-o-currency-dollar" collapsible collapsed>
+            <x-slot name="heading">Informasi Biaya Pendaftaran</x-slot>
+            <div class="space-y-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div class="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
+                        <p class="text-xs text-emerald-600 dark:text-emerald-400 font-semibold uppercase">Biaya Daftar Ulang</p>
+                        <p class="text-2xl font-bold text-emerald-700 dark:text-emerald-300">Rp {{ number_format(config('spmb.total_registration_fee', 7000000), 0, ',', '.') }}</p>
+                        <p class="text-xs text-emerald-500 mt-1">Termasuk perlengkapan santri</p>
+                    </div>
+                    <div class="p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+                        <p class="text-xs text-blue-600 dark:text-blue-400 font-semibold uppercase">SPP Bulanan</p>
+                        <p class="text-2xl font-bold text-blue-700 dark:text-blue-300">Rp {{ number_format(config('spmb.first_month_spp', 750000), 0, ',', '.') }}</p>
+                        <p class="text-xs text-blue-500 mt-1">Makan & laundry</p>
+                    </div>
+                </div>
+                @if(config('spmb.registration_costs'))
+                    <div class="p-3 rounded-lg bg-gray-50 dark:bg-gray-800 text-sm">
+                        <p class="font-semibold text-gray-700 dark:text-gray-300 mb-2">Rincian Biaya Daftar Ulang:</p>
+                        <div class="space-y-1">
+                            @foreach(config('spmb.registration_costs', []) as $cost)
+                                <div class="flex justify-between text-gray-600 dark:text-gray-400">
+                                    <span>{{ $cost['name'] }}</span>
+                                    <span class="font-mono">{{ $cost['amount'] > 0 ? 'Rp ' . number_format($cost['amount'], 0, ',', '.') : '-' }}</span>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+            </div>
+        </x-filament::section>
+
         {{-- ====== TIMELINE PPDB ====== --}}
-        <x-filament::section>
+        <x-filament::section icon="heroicon-o-calendar-days">
             <x-slot name="heading">Jadwal / Timeline SPMB</x-slot>
             <div class="relative">
                 <div class="absolute left-4 top-0 bottom-0 w-0.5 bg-emerald-200 dark:bg-emerald-800"></div>
@@ -268,7 +249,7 @@
         </x-filament::section>
 
         {{-- ====== KEBIJAKAN ====== --}}
-        <x-filament::section collapsible collapsed>
+        <x-filament::section icon="heroicon-o-shield-check" collapsible collapsed>
             <x-slot name="heading">Pernyataan & Kebijakan Pesantren</x-slot>
             <ol class="list-decimal list-inside space-y-2 text-sm text-gray-700 dark:text-gray-300">
                 @foreach(config('spmb.pernyataan_kebijakan', []) as $item)

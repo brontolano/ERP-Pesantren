@@ -33,12 +33,19 @@ class PendaftarDashboard extends Page
         $this->totalDocs = count(config('spmb.mandatory_documents', []));
         $this->timeline = config('spmb.timeline', []);
 
+        $mandatoryDocs = config('spmb.mandatory_documents', []);
+
         $this->registrations = $user?->registrations()
             ->with('documents')
             ->orderBy('created_at', 'desc')
             ->get()
-            ->map(function (PpdbRegistration $reg) {
+            ->map(function (PpdbRegistration $reg) use ($mandatoryDocs) {
                 $reg->approved_docs = $reg->documents->where('status', 'approved')->count();
+                $uploadedTypes = $reg->documents->pluck('type')->toArray();
+                $reg->missing_docs = collect($mandatoryDocs)
+                    ->filter(fn ($doc) => !in_array($doc['type'], $uploadedTypes))
+                    ->pluck('label')
+                    ->toArray();
                 $reg->status_label = match ($reg->status) {
                     'pending' => 'Menunggu Verifikasi',
                     'document_review' => 'Review Dokumen',
