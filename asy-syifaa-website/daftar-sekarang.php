@@ -883,8 +883,28 @@ header('Expires: 0');
 
   // ── Cascading Wilayah Select (rebuilt, defensive) ─────────────
   function normalizeWilayahRows(input) {
-    const arr = Array.isArray(input) ? input : [];
-    return arr.filter((row) => row && typeof row === 'object');
+    const pickArray = (x) => {
+      if (Array.isArray(x)) return x;
+      if (!x || typeof x !== 'object') return [];
+      if (Array.isArray(x.data)) return x.data;
+      if (Array.isArray(x.items)) return x.items;
+      if (Array.isArray(x.results)) return x.results;
+      if (x.data && typeof x.data === 'object') {
+        if (Array.isArray(x.data.data)) return x.data.data;
+        if (Array.isArray(x.data.items)) return x.data.items;
+        if (Array.isArray(x.data.results)) return x.data.results;
+      }
+      return [];
+    };
+    const toCanonical = (row) => {
+      if (!row || typeof row !== 'object') return null;
+      const code = row.code ?? row.id ?? row.province_code ?? row.regency_code ?? row.district_code ?? row.village_code ?? '';
+      const name = row.name ?? row.province_name ?? row.regency_name ?? row.district_name ?? row.village_name ?? row.label ?? '';
+      const postalCode = row.postal_code ?? row.postalCode ?? row.kode_pos ?? '';
+      if (!code || !name) return null;
+      return { ...row, code: String(code), name: String(name), postal_code: postalCode ? String(postalCode) : '' };
+    };
+    return pickArray(input).map(toCanonical).filter(Boolean);
   }
   async function fetchWilayahRows(apiUrl, fallbackUrl) {
     try {
