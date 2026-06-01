@@ -1,0 +1,315 @@
+name: Reinstall Website on VPS
+
+on:
+  workflow_dispatch:
+    inputs:
+      clean_install:
+        description: 'Hapus semua file lama sebelum deploy?'
+        required: true
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+      deploy_path:
+        description: 'Override deploy path (kosongkan untuk auto-detect)'
+        required: false
+        default: ''
+        type: string
+
+concurrency:
+  group: reinstall-website
+  cancel-in-progress: false
+
+jobs:
+  reinstall:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Validate secrets
+        run: |
+          missing=""
+          [ -z "${{ secrets.HOSTINGER_HOST }}" ] && missing="$missing HOSTINGER_HOST"
+          [ -z "${{ secrets.HOSTINGER_USER }}" ] && missing="$missing HOSTINGER_USER"
+          [ -z "${{ secrets.HOSTINGER_SSH_KEY }}" ] && missing="$missing HOSTINGER_SSH_KEY"
+          [ -z "${{ secrets.HOSTINGER_PORT }}" ] && missing="$missing HOSTINGER_PORT"
+          if [ -n "$missing" ]; then
+            echo "::error::Missing secrets:$missing"
+            exit 1
+          fi
+
+      - uses: actions/checkout@v5
+        with:
+          sparse-checkout: asy-syifaa-website
+
+      - name: Detect and prepare VPS
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.HOSTINGER_HOST }}
+          username: ${{ secrets.HOSTINGER_USER }}
+          key: ${{ secrets.HOSTINGER_SSH_KEY }}
+          passphrase: ${{ secrets.HOSTINGER_SSH_PASSPHRASE }}
+          port: ${{ secrets.HOSTINGER_PORT }}
+          script: |
+            set -e
+            echo "===== VPS INFO ====="
+            uname -a
+            echo ""
+
+            # Detect PHP version
+            PHP_VER=$(php -v 2>/dev/null | head -1 || echo "PHP not found")
+            echo "PHP: $PHP_VER"
+
+            # Detect Nginx
+            NGINX_VER=$(nginx -v 2>&1 || echo "Nginx not found")
+            echo "Nginx: $NGINX_VER"
+
+            # Detect PHP-FPM socket
+            PHP_FPM_SOCK=""
+            for sock in /run/php/php*-fpm.sock /var/run/php/php*-fpm.sock /tmp/php*-fpm.sock; do
+              if [ -S "$sock" ] 2>/dev/null; then
+                PHP_FPM_SOCK="$sock"
+                break
+              fi
+            done
+            echo "PHP-FPM socket: ${PHP_FPM_SOCK:-NOT FOUND}"
+
+            # Determine deploy path
+            DEPLOY_PATH="${{ inputs.deploy_path }}"
+            if [ -z "$DEPLOY_PATH" ]; then
+              DEPLOY_PATH="${{ secrets.HOSTINGER_DEPLOY_PATH }}"
+            fi
+            if [ -z "$DEPLOY_PATH" ]; then
+              # Auto-detect from Nginx configs
+              DEPLOY_PATH=$(grep -r "root " /etc/nginx/sites-enabled/ 2>/dev/null | grep -i "asy-syifaa\|www\." | head -1 | awk '{print $2}' | tr -d ';' || true)
+            fi
+            if [ -z "$DEPLOY_PATH" ]; then
+              DEPLOY_PATH="/var/www/asy-syifaa-website"
+            fi
+            echo "Deploy path: $DEPLOY_PATH"
+
+            # Save deploy path for next steps
+            echo "$DEPLOY_PATH" > /tmp/.asy-syifaa-deploy-path
+
+            echo ""
+            echo "===== EXISTING NGINX CONFIGS ====="
+            ls -la /etc/nginx/sites-enabled/ 2>/dev/null || echo "No sites-enabled dir"
+            echo ""
+            cat /etc/nginx/sites-enabled/*asy-syifaa* 2>/dev/null || echo "No existing asy-syifaa nginx config"
+
+            echo ""
+            echo "===== EXISTING FILES AT DEPLOY PATH ====="
+            if [ -d "$DEPLOY_PATH" ]; then
+              ls -la "$DEPLOY_PATH" | head -20
+              echo "Total files: $(find "$DEPLOY_PATH" -type f | wc -l)"
+            else
+              echo "Directory does not exist yet"
+            fi
+
+      - name: Clean old installation
+        if: ${{ inputs.clean_install == 'true' }}
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.HOSTINGER_HOST }}
+          username: ${{ secrets.HOSTINGER_USER }}
+          key: ${{ secrets.HOSTINGER_SSH_KEY }}
+          passphrase: ${{ secrets.HOSTINGER_SSH_PASSPHRASE }}
+          port: ${{ secrets.HOSTINGER_PORT }}
+          script: |
+            set -e
+            DEPLOY_PATH=$(cat /tmp/.asy-syifaa-deploy-path)
+            echo "Cleaning old files at: $DEPLOY_PATH"
+
+            if [ -d "$DEPLOY_PATH" ]; then
+              # Backup .env or config if exists
+              if [ -f "$DEPLOY_PATH/.env" ]; then
+                cp "$DEPLOY_PATH/.env" /tmp/.asy-syifaa-env-backup
+                echo "Backed up .env"
+              fi
+
+              rm -rf "$DEPLOY_PATH"
+              echo "Old files removed"
+            fi
+
+            mkdir -p "$DEPLOY_PATH"
+            echo "Fresh directory created: $DEPLOY_PATH"
+
+      - name: Deploy website files
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.HOSTINGER_HOST }}
+          username: ${{ secrets.HOSTINGER_USER }}
+          key: ${{ secrets.HOSTINGER_SSH_KEY }}
+          passphrase: ${{ secrets.HOSTINGER_SSH_PASSPHRASE }}
+          port: ${{ secrets.HOSTINGER_PORT }}
+          source: "asy-syifaa-website/*"
+          target: /tmp/asy-syifaa-upload
+          strip_components: 1
+          overwrite: true
+
+      - name: Install and configure
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.HOSTINGER_HOST }}
+          username: ${{ secrets.HOSTINGER_USER }}
+          key: ${{ secrets.HOSTINGER_SSH_KEY }}
+          passphrase: ${{ secrets.HOSTINGER_SSH_PASSPHRASE }}
+          port: ${{ secrets.HOSTINGER_PORT }}
+          script: |
+            set -e
+            DEPLOY_PATH=$(cat /tmp/.asy-syifaa-deploy-path)
+
+            echo "===== Moving files to $DEPLOY_PATH ====="
+            cp -a /tmp/asy-syifaa-upload/. "$DEPLOY_PATH/"
+            rm -rf /tmp/asy-syifaa-upload
+
+            # Restore .env if backed up
+            if [ -f /tmp/.asy-syifaa-env-backup ]; then
+              cp /tmp/.asy-syifaa-env-backup "$DEPLOY_PATH/.env"
+              rm /tmp/.asy-syifaa-env-backup
+              echo "Restored .env"
+            fi
+
+            # Create required directories
+            mkdir -p "$DEPLOY_PATH/storage/sessions"
+            mkdir -p "$DEPLOY_PATH/storage/logs"
+
+            # Set permissions
+            WEBUSER="www-data"
+            id "$WEBUSER" &>/dev/null || WEBUSER=$(whoami)
+            chown -R "$WEBUSER:$WEBUSER" "$DEPLOY_PATH" 2>/dev/null || true
+            chmod -R 755 "$DEPLOY_PATH"
+            chmod -R 775 "$DEPLOY_PATH/storage" 2>/dev/null || true
+
+            echo "Files deployed: $(find "$DEPLOY_PATH" -type f | wc -l)"
+
+            # Detect PHP-FPM socket
+            PHP_FPM_SOCK=""
+            for sock in /run/php/php*-fpm.sock /var/run/php/php*-fpm.sock /tmp/php*-fpm.sock; do
+              if [ -S "$sock" ] 2>/dev/null; then
+                PHP_FPM_SOCK="$sock"
+                break
+              fi
+            done
+
+            # If no socket found, try TCP
+            if [ -z "$PHP_FPM_SOCK" ]; then
+              PHP_FPM_SOCK="127.0.0.1:9000"
+              echo "No FPM socket found, using TCP: $PHP_FPM_SOCK"
+            fi
+
+            echo "===== Configuring Nginx ====="
+
+            # Generate Nginx config from template
+            NGINX_CONF="/etc/nginx/sites-available/asy-syifaa-website"
+
+            if [ -f "$DEPLOY_PATH/nginx.conf" ]; then
+              # Use the shipped config, patching the PHP-FPM socket and deploy path
+              cp "$DEPLOY_PATH/nginx.conf" "$NGINX_CONF"
+
+              # Patch root path
+              sed -i "s|root /var/www/asy-syifaa-website;|root $DEPLOY_PATH;|g" "$NGINX_CONF"
+
+              # Patch PHP-FPM socket/address
+              if echo "$PHP_FPM_SOCK" | grep -q "\.sock$"; then
+                sed -i "s|fastcgi_pass .*|fastcgi_pass unix:$PHP_FPM_SOCK;|g" "$NGINX_CONF"
+              else
+                sed -i "s|fastcgi_pass .*|fastcgi_pass $PHP_FPM_SOCK;|g" "$NGINX_CONF"
+              fi
+
+              echo "Nginx config written to $NGINX_CONF"
+            else
+              echo "::warning::nginx.conf not found in deploy, skipping Nginx setup"
+            fi
+
+            # Enable site
+            ln -sf "$NGINX_CONF" /etc/nginx/sites-enabled/asy-syifaa-website 2>/dev/null || true
+
+            # Remove default site if it conflicts
+            if [ -f /etc/nginx/sites-enabled/default ]; then
+              echo "Note: default Nginx site still enabled"
+            fi
+
+            # Test Nginx config
+            nginx -t 2>&1
+            echo "Nginx config test passed"
+
+            # Reload Nginx
+            systemctl reload nginx 2>/dev/null || nginx -s reload 2>/dev/null || service nginx reload
+            echo "Nginx reloaded"
+
+            # Cleanup temp files
+            rm -f /tmp/.asy-syifaa-deploy-path
+
+      - name: Verify deployment
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.HOSTINGER_HOST }}
+          username: ${{ secrets.HOSTINGER_USER }}
+          key: ${{ secrets.HOSTINGER_SSH_KEY }}
+          passphrase: ${{ secrets.HOSTINGER_SSH_PASSPHRASE }}
+          port: ${{ secrets.HOSTINGER_PORT }}
+          script: |
+            set -e
+            echo "===== VERIFICATION ====="
+
+            # Check files
+            DEPLOY_PATH=$(grep -r "root " /etc/nginx/sites-enabled/asy-syifaa-website 2>/dev/null | head -1 | awk '{print $2}' | tr -d ';' || echo "/var/www/asy-syifaa-website")
+
+            echo "Deploy path: $DEPLOY_PATH"
+
+            if [ -f "$DEPLOY_PATH/index.php" ]; then
+              echo "[OK] index.php exists"
+            else
+              echo "[FAIL] index.php missing!"
+              exit 1
+            fi
+
+            if [ -f "$DEPLOY_PATH/router.php" ]; then
+              echo "[OK] router.php exists"
+            else
+              echo "[FAIL] router.php missing!"
+              exit 1
+            fi
+
+            if [ -f "$DEPLOY_PATH/daftar-sekarang.php" ]; then
+              echo "[OK] daftar-sekarang.php exists"
+            else
+              echo "[WARN] daftar-sekarang.php missing"
+            fi
+
+            if [ -d "$DEPLOY_PATH/assets" ]; then
+              echo "[OK] assets/ directory exists"
+            else
+              echo "[WARN] assets/ directory missing"
+            fi
+
+            if [ -d "$DEPLOY_PATH/src" ]; then
+              echo "[OK] src/ directory exists"
+            else
+              echo "[WARN] src/ directory missing"
+            fi
+
+            # Check PHP
+            echo ""
+            php -r "echo 'PHP ' . PHP_VERSION . ' OK' . PHP_EOL;"
+
+            # Check Nginx serving
+            echo ""
+            echo "Testing local HTTP..."
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost/ 2>/dev/null || echo "failed")
+            echo "HTTP response: $HTTP_CODE"
+
+            if [ "$HTTP_CODE" = "200" ]; then
+              echo "[OK] Website responding on localhost"
+            else
+              echo "[WARN] HTTP $HTTP_CODE - may need DNS/domain config"
+            fi
+
+            # Check Nginx config
+            echo ""
+            echo "Active Nginx sites:"
+            ls -la /etc/nginx/sites-enabled/
+
+            echo ""
+            echo "===== DEPLOYMENT COMPLETE ====="
