@@ -51,6 +51,11 @@ jobs:
           command_timeout: 5m
           script: |
             cd /opt/asy-syifaa/erp
+            echo "==> Clearing old caches..."
+            docker compose exec -T app php artisan optimize:clear 2>&1 || true
+            echo "==> Restarting PHP-FPM (clear OPcache)..."
+            docker compose restart app 2>&1 || true
+            sleep 3
             echo "==> Running composer install..."
             docker compose exec -T app composer install --no-interaction --no-dev --optimize-autoloader 2>&1 || echo "Warning: composer install skipped"
             echo "==> Running migrations..."
@@ -59,6 +64,7 @@ jobs:
             docker compose exec -T app php artisan config:cache 2>&1 || echo "Warning: config cache skipped"
             docker compose exec -T app php artisan route:cache 2>&1 || echo "Warning: route cache skipped"
             docker compose exec -T app php artisan view:cache 2>&1 || echo "Warning: view cache skipped"
-            echo "==> Restarting containers..."
+            echo "==> Restarting all containers..."
             docker compose restart 2>&1 || echo "Warning: restart skipped"
+            sleep 2
             echo "==> ERP deploy complete!"
