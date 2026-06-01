@@ -28,7 +28,7 @@ jobs:
             exit 1
           fi
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           sparse-checkout: asy-syifaa-website
 
@@ -47,6 +47,9 @@ jobs:
 
       - name: Verify deployment
         uses: appleboy/ssh-action@v1
+        env:
+          EXPECT_TOKEN_1: "nama_wali"
+          EXPECT_TOKEN_2: "alamat_wali_jalan"
         with:
           host: ${{ secrets.HOSTINGER_HOST }}
           username: ${{ secrets.HOSTINGER_USER }}
@@ -54,9 +57,23 @@ jobs:
 
           port: ${{ secrets.HOSTINGER_PORT }}
           script: |
-            TARGET="${HOSTINGER_DEPLOY_PATH:-$HOME/public_html}"
+            TARGET="${{ secrets.HOSTINGER_DEPLOY_PATH }}"
+            if [ -z "$TARGET" ]; then TARGET="$HOME/public_html"; fi
+
             if [ -f "$TARGET/index.php" ] || [ -f "$TARGET/index.html" ]; then
-              echo "==> Website deploy complete!"
+              echo "==> Website deploy complete at $TARGET"
             else
               echo "==> Warning: No index file found at $TARGET"
+            fi
+
+            if [ -f "$TARGET/daftar-sekarang.php" ]; then
+              if grep -q "$EXPECT_TOKEN_1" "$TARGET/daftar-sekarang.php" && grep -q "$EXPECT_TOKEN_2" "$TARGET/daftar-sekarang.php"; then
+                echo "==> Verified: daftar-sekarang.php contains latest standardized fields"
+              else
+                echo "::error::daftar-sekarang.php found but expected tokens missing. Possible wrong deploy target or stale source."
+                exit 1
+              fi
+            else
+              echo "::error::daftar-sekarang.php not found at $TARGET"
+              exit 1
             fi
