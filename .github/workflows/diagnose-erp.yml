@@ -1,0 +1,66 @@
+name: Diagnose ERP
+
+on:
+  workflow_dispatch:
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Deep ERP diagnosis
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          command_timeout: 3m
+          script: |
+            cd /opt/asy-syifaa/erp
+
+            echo "=== 1. CONTAINER STATUS ==="
+            docker compose ps
+
+            echo "=== 2. LARAVEL ERROR LOG (last 50 lines) ==="
+            docker compose exec -T app cat /var/www/html/storage/logs/laravel.log 2>/dev/null | tail -50 || echo "No laravel.log"
+
+            echo "=== 3. ARTISAN VERSION TEST ==="
+            docker compose exec -T app php artisan --version 2>&1
+
+            echo "=== 4. ARTISAN ROUTE LIST (first 10) ==="
+            docker compose exec -T app php artisan route:list --compact 2>&1 | head -15
+
+            echo "=== 5. COMPOSER AUTOLOAD CHECK ==="
+            docker compose exec -T app php -r "require '/var/www/html/vendor/autoload.php'; echo 'Autoload OK';" 2>&1
+
+            echo "=== 6. APP BOOTSTRAP TEST ==="
+            docker compose exec -T app php -r "
+              require '/var/www/html/vendor/autoload.php';
+              \$app = require '/var/www/html/bootstrap/app.php';
+              echo 'App bootstrap OK';
+            " 2>&1
+
+            echo "=== 7. HTTP TEST (curl from inside) ==="
+            docker compose exec -T app curl -sS -o /dev/null -w '%{http_code}' http://localhost:9000/ 2>&1 || echo "curl failed"
+
+            echo "=== 8. NGINX ERROR LOG ==="
+            docker compose exec -T nginx cat /var/log/nginx/error.log 2>/dev/null | tail -10 || echo "No nginx error log"
+
+            echo "=== 9. PHP-FPM ERROR LOG ==="
+            docker compose exec -T app cat /usr/local/var/log/php-fpm.log 2>/dev/null | tail -10 || echo "No fpm log"
+            docker compose exec -T app cat /var/log/php-fpm.log 2>/dev/null | tail -10 || echo "No fpm log v2"
+
+            echo "=== 10. FILE OWNERSHIP ==="
+            docker compose exec -T app ls -la /var/www/html/storage/logs/ 2>&1
+            docker compose exec -T app ls -la /var/www/html/bootstrap/cache/ 2>&1
+
+            echo "=== 11. STORAGE WRITABLE TEST ==="
+            docker compose exec -T app php -r "echo is_writable('/var/www/html/storage/logs') ? 'logs writable' : 'logs NOT writable';" 2>&1
+            docker compose exec -T app php -r "echo is_writable('/var/www/html/bootstrap/cache') ? 'cache writable' : 'cache NOT writable';" 2>&1
+
+            echo "=== 12. API HEALTH CHECK ==="
+            curl -sS http://127.0.0.1:3100/api/health 2>&1 || echo "API not responding on 3100"
+            curl -sS http://127.0.0.1:3100/api/v1/wilayah/provinces 2>&1 | head -c 200 || echo "Wilayah API failed"
+
+            echo ""
+            echo "=== DONE ==="
