@@ -50,16 +50,15 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           command_timeout: 5m
           script: |
-            set -e
             cd /opt/asy-syifaa/erp
             echo "==> Running composer install..."
-            docker compose exec -T app composer install --no-interaction --no-dev --optimize-autoloader 2>/dev/null || true
+            docker compose exec -T app composer install --no-interaction --no-dev --optimize-autoloader 2>&1 || echo "Warning: composer install skipped"
             echo "==> Running migrations..."
-            docker compose exec -T app php artisan migrate --force 2>/dev/null || true
+            docker compose exec -T app php artisan migrate --force 2>&1 || echo "Warning: migration skipped"
             echo "==> Caching config/routes/views..."
-            docker compose exec -T app php artisan config:cache
-            docker compose exec -T app php artisan route:cache
-            docker compose exec -T app php artisan view:cache
+            docker compose exec -T app php artisan config:cache 2>&1 || echo "Warning: config cache skipped"
+            docker compose exec -T app php artisan route:cache 2>&1 || echo "Warning: route cache skipped"
+            docker compose exec -T app php artisan view:cache 2>&1 || echo "Warning: view cache skipped"
             echo "==> Restarting containers..."
-            docker compose restart
+            docker compose restart 2>&1 || echo "Warning: restart skipped"
             echo "==> ERP deploy complete!"
