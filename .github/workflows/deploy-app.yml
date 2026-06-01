@@ -14,7 +14,7 @@ concurrency:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 12
     steps:
       - name: Validate required secrets
         run: |
@@ -55,21 +55,23 @@ jobs:
           strip_components: 3
           overwrite: true
 
-      - name: Restart PWA container
+      - name: Restart PWA container and verify
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            set -e
-            FILE_COUNT=$(find /opt/asy-syifaa-app/dist -type f 2>/dev/null | wc -l)
-            echo "==> $FILE_COUNT files deployed"
-            if [ "$FILE_COUNT" -gt 0 ]; then
-              cd /opt/asy-syifaa-app
-              docker compose restart 2>/dev/null || docker restart asy-syifaa-pwa 2>/dev/null || true
-              echo "==> PWA deploy complete!"
-            else
-              echo "::error::No files deployed!"
-              exit 1
-            fi
+            set -euo pipefail
+            DIST_DIR="/opt/asy-syifaa-app/dist"
+            APP_DIR="/opt/asy-syifaa-app"
+
+            [ -d "$DIST_DIR" ] || { echo "::error::Missing $DIST_DIR"; exit 1; }
+            FILE_COUNT=$(find "$DIST_DIR" -type f | wc -l)
+            [ "$FILE_COUNT" -gt 0 ] || { echo "::error::No files deployed to $DIST_DIR"; exit 1; }
+
+            cd "$APP_DIR"
+            docker compose restart 2>/dev/null || docker restart asy-syifaa-pwa
+            sleep 3
+            curl -fsS http://127.0.0.1:4173/ >/dev/null || curl -fsS http://127.0.0.1/ >/dev/null
+            echo "==> PWA deploy complete"

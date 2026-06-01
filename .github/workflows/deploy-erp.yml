@@ -14,7 +14,7 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 12
     steps:
       - name: Validate required secrets
         run: |
@@ -48,23 +48,35 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          command_timeout: 5m
+          command_timeout: 8m
           script: |
-            cd /opt/asy-syifaa/erp
+            set -euo pipefail
+            APP_DIR="/opt/asy-syifaa/erp"
+            SRC_DIR="/opt/asy-syifaa/erp/src"
+
+            [ -d "$APP_DIR" ] || { echo "::error::Missing $APP_DIR"; exit 1; }
+            [ -f "$SRC_DIR/artisan" ] || { echo "::error::Missing $SRC_DIR/artisan"; exit 1; }
+
+            cd "$APP_DIR"
+
             echo "==> Clearing old caches..."
-            docker compose exec -T app php artisan optimize:clear 2>&1 || true
-            echo "==> Restarting PHP-FPM (clear OPcache)..."
-            docker compose restart app 2>&1 || true
-            sleep 3
-            echo "==> Running composer install..."
-            docker compose exec -T app composer install --no-interaction --no-dev --optimize-autoloader 2>&1 || echo "Warning: composer install skipped"
+            docker compose exec -T app php artisan optimize:clear
+
+            echo "==> Installing PHP dependencies..."
+            docker compose exec -T app composer install --no-interaction --no-dev --optimize-autoloader
+
             echo "==> Running migrations..."
-            docker compose exec -T app php artisan migrate --force 2>&1 || echo "Warning: migration skipped"
+            docker compose exec -T app php artisan migrate --force
+
             echo "==> Caching config/routes/views..."
-            docker compose exec -T app php artisan config:cache 2>&1 || echo "Warning: config cache skipped"
-            docker compose exec -T app php artisan route:cache 2>&1 || echo "Warning: route cache skipped"
-            docker compose exec -T app php artisan view:cache 2>&1 || echo "Warning: view cache skipped"
-            echo "==> Restarting all containers..."
-            docker compose restart 2>&1 || echo "Warning: restart skipped"
-            sleep 2
-            echo "==> ERP deploy complete!"
+            docker compose exec -T app php artisan config:cache
+            docker compose exec -T app php artisan route:cache
+            docker compose exec -T app php artisan view:cache
+
+            echo "==> Restarting ERP containers..."
+            docker compose restart
+            sleep 3
+
+            echo "==> Checking ERP health endpoint..."
+            curl -fsS http://127.0.0.1:8080/up || curl -fsS http://127.0.0.1/up
+            echo "==> ERP deploy complete"
