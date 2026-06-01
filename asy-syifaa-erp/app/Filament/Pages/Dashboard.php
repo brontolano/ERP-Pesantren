@@ -3,15 +3,16 @@
 namespace App\Filament\Pages;
 
 use Filament\Pages\Dashboard as BaseDashboard;
+use Illuminate\Http\RedirectResponse;
+use Livewire\Attributes\On;
 
 class Dashboard extends BaseDashboard
 {
+    protected static ?string $navigationIcon = 'heroicon-o-chart-bar-square';
+
     public static function canAccess(): bool
     {
         $user = auth('erp')->user();
-
-        // Wali punya halaman sendiri (WaliPortal), tidak perlu akses Dashboard ERP
-        // Pendaftar & Santri juga tidak perlu Dashboard ERP
         if (! $user) {
             return false;
         }
@@ -24,5 +25,23 @@ class Dashboard extends BaseDashboard
             'orang_tua',
             'wali',
         ]);
+    }
+
+    public function mount(): void
+    {
+        $user = auth('erp')->user();
+        if (! $user) {
+            return;
+        }
+
+        if ($user->hasRole('Pendaftar')) {
+            $this->redirect(PendaftarDashboard::getUrl());
+            return;
+        }
+
+        if ($user->hasAnyRole(['Wali Santri', 'wali_santri', 'orang_tua', 'wali'])) {
+            $this->redirect(WaliPortal::getUrl());
+            return;
+        }
     }
 }

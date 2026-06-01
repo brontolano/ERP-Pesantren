@@ -7,6 +7,7 @@ use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use App\Filament\Pages\Dashboard;
+use Filament\Navigation\NavigationGroup;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
@@ -41,14 +42,25 @@ class ErpPanelProvider extends PanelProvider
                 'info' => Color::Sky,
             ])
             ->navigationGroups([
-                'Dashboard',
-                'Kepesantrenan',
-                'Keuangan',
-                'SPMB',
-                'CMS Website',
-                'Notifikasi',
-                'Pengguna',
-                'Pengaturan',
+                NavigationGroup::make('Dashboard')
+                    ->icon('heroicon-o-squares-2x2'),
+                NavigationGroup::make('Kepesantrenan')
+                    ->icon('heroicon-o-academic-cap'),
+                NavigationGroup::make('Keuangan')
+                    ->icon('heroicon-o-banknotes'),
+                NavigationGroup::make('SPMB')
+                    ->icon('heroicon-o-clipboard-document-list'),
+                NavigationGroup::make('CMS Website')
+                    ->icon('heroicon-o-globe-alt')
+                    ->collapsed(),
+                NavigationGroup::make('Notifikasi')
+                    ->icon('heroicon-o-bell')
+                    ->collapsed(),
+                NavigationGroup::make('Pengguna')
+                    ->icon('heroicon-o-users'),
+                NavigationGroup::make('Pengaturan')
+                    ->icon('heroicon-o-cog-6-tooth')
+                    ->collapsed(),
             ])
             ->discoverResources(
                 in: app_path('Filament/Resources'),
@@ -86,6 +98,8 @@ class ErpPanelProvider extends PanelProvider
             ])
             ->viteTheme('resources/css/filament/theme.css')
             ->sidebarCollapsibleOnDesktop()
+            ->spa()
+            ->globalSearchKeyBindings(['command+k', 'ctrl+k'])
             ->databaseNotifications()
             ->renderHook(
                 'panels::auth.login.form.before',
