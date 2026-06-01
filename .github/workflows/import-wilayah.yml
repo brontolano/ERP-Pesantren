@@ -1,0 +1,40 @@
+name: Import Wilayah Data
+
+on:
+  workflow_dispatch:
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Import wilayah to ERP database
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          command_timeout: 10m
+          script: |
+            cd /opt/asy-syifaa/erp
+
+            echo "==> Downloading wilayah data..."
+            curl -sL "https://raw.githubusercontent.com/cahyadsn/wilayah/master/db/wilayah.sql" -o src/storage/wilayah.sql
+            curl -sL "https://raw.githubusercontent.com/cahyadsn/wilayah/master/db/wilayah_kodepos.sql" -o src/storage/wilayah_kodepos.sql
+
+            echo "==> File sizes:"
+            ls -la src/storage/wilayah*.sql
+
+            echo "==> Running import via artisan..."
+            docker compose exec -T app php artisan wilayah:import /var/www/html/storage/wilayah.sql /var/www/html/storage/wilayah_kodepos.sql --fresh 2>&1
+
+            echo "==> Clearing cache..."
+            docker compose exec -T app php artisan cache:clear 2>&1 || true
+
+            echo "==> Verifying..."
+            docker compose exec -T app php artisan tinker --execute="echo 'Provinces: ' . \App\Models\Master\Province::count() . ', Cities: ' . \App\Models\Master\City::count() . ', Districts: ' . \App\Models\Master\District::count() . ', Villages: ' . \App\Models\Master\Village::count();" 2>&1 || true
+
+            echo "==> Cleanup..."
+            rm -f src/storage/wilayah.sql src/storage/wilayah_kodepos.sql
+
+            echo "==> Import complete!"

@@ -21,7 +21,7 @@ class Login extends BaseLogin
             ->required()
             ->autocomplete('username')
             ->autofocus()
-            ->helperText('Staff: gunakan username &nbsp;|&nbsp; Orang Tua/Wali: gunakan nomor HP');
+            ->helperText(new \Illuminate\Support\HtmlString('Staff: gunakan username &nbsp;|&nbsp; Orang Tua/Wali: gunakan nomor HP'));
     }
 
     /**
