@@ -1,5 +1,5 @@
-<div class="text-center mb-2 -mt-2">
-    <p class="text-sm text-gray-500 dark:text-gray-400">
+<div class="text-center mb-2 -mt-2 animate-fade-in">
+    <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">
         Pondok Pesantren Islam Internasional Terpadu
     </p>
     <p class="text-xs text-gray-400 dark:text-gray-500">
@@ -17,6 +17,7 @@
         background: white !important;
         border-radius: 1.25rem !important;
         box-shadow: 0 20px 60px -15px rgba(0, 0, 0, 0.3) !important;
+        animation: slideUp 0.4s ease-out;
     }
     .dark .fi-simple-main {
         background: #1f2937 !important;
@@ -25,16 +26,11 @@
         font-size: 1.25rem !important;
         font-weight: 700 !important;
     }
-    /* Keep logo small on login */
     .fi-simple-header .fi-logo > div {
         justify-content: center;
     }
-    .fi-simple-layout::after {
-        content: '';
-        position: fixed;
-        bottom: 0; left: 0; right: 0;
-        height: 3px;
-        background: linear-gradient(90deg, #fbbf24, #f59e0b, #fbbf24);
-        z-index: 10;
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(12px); }
+        to { opacity: 1; transform: translateY(0); }
     }
 </style>
