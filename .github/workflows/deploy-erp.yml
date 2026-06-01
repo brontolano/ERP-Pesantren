@@ -22,6 +22,7 @@ jobs:
           [ -z "${{ secrets.VPS_HOST }}" ] && missing="$missing VPS_HOST"
           [ -z "${{ secrets.VPS_USER }}" ] && missing="$missing VPS_USER"
           [ -z "${{ secrets.VPS_SSH_KEY }}" ] && missing="$missing VPS_SSH_KEY"
+          [ -z "${{ secrets.VPS_SSH_PASSPHRASE }}" ] && missing="$missing VPS_SSH_PASSPHRASE"
           if [ -n "$missing" ]; then
             echo "::error::Missing secrets:$missing"
             exit 1
@@ -37,6 +38,7 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
+          passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}
           source: "asy-syifaa-erp/*"
           target: "/opt/asy-syifaa/erp/src/"
           strip_components: 1
@@ -48,6 +50,7 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
+          passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}
           command_timeout: 8m
           script: |
             set -euo pipefail

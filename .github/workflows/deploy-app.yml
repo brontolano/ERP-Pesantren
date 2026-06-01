@@ -22,6 +22,7 @@ jobs:
           [ -z "${{ secrets.VPS_HOST }}" ] && missing="$missing VPS_HOST"
           [ -z "${{ secrets.VPS_USER }}" ] && missing="$missing VPS_USER"
           [ -z "${{ secrets.VPS_SSH_KEY }}" ] && missing="$missing VPS_SSH_KEY"
+          [ -z "${{ secrets.VPS_SSH_PASSPHRASE }}" ] && missing="$missing VPS_SSH_PASSPHRASE"
           if [ -n "$missing" ]; then
             echo "::error::Missing secrets:$missing"
             exit 1
@@ -50,6 +51,7 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
+          passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}
           source: "asy-syifaa-app/pwa/dist/*"
           target: "/opt/asy-syifaa-app/dist/"
           strip_components: 3
@@ -61,6 +63,7 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
+          passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}
           script: |
             set -euo pipefail
             DIST_DIR="/opt/asy-syifaa-app/dist"
