@@ -103,7 +103,7 @@ services:
     networks:
       - asy-syifaa-net
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/health || exit 1"]
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -134,7 +134,7 @@ services:
     container_name: website-fpm
     restart: unless-stopped
     volumes:
-      - ./asy-syifaa-website/public:/var/www/html/public:ro
+      - ./asy-syifaa-website:/var/www/html:ro
     networks:
       - asy-syifaa-net
 
@@ -145,7 +145,7 @@ services:
     depends_on:
       - website-fpm
     volumes:
-      - ./asy-syifaa-website/public:/var/www/html/public:ro
+      - ./asy-syifaa-website:/var/www/html:ro
       - ./asy-syifaa-website/nginx.conf:/etc/nginx/conf.d/default.conf:ro
     networks:
       - asy-syifaa-net

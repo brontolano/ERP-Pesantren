@@ -66,9 +66,9 @@ jobs:
             sleep 3
 
             echo "==> Checking API health..."
-            curl -fsS http://127.0.0.1:3100/api/health
+            curl -fsS http://127.0.0.1:3000/api/health
             echo "==> Checking public website endpoints..."
-            curl -fsS "http://127.0.0.1:3100/api/public/students" > /dev/null
-            curl -fsS "http://127.0.0.1:3100/api/public/staff?status=aktif" > /dev/null
-            curl -fsS "http://127.0.0.1:3100/api/public/content/gallery?limit=200" > /dev/null
+            curl -fsS "http://127.0.0.1:3000/api/public/students" > /dev/null
+            curl -fsS "http://127.0.0.1:3000/api/public/staff?status=aktif" > /dev/null
+            curl -fsS "http://127.0.0.1:3000/api/public/content/gallery?limit=200" > /dev/null
             echo "==> API deploy complete"
