@@ -1,24 +1,15 @@
 RewriteEngine On
 
-# === Safety guards: ensure pages render in browser (not downloaded) ===
+# === Force PHP handler (works on LiteSpeed & Apache) ===
+AddHandler application/x-httpd-php .php
+
+# === Safety guards ===
 AddType text/html .html .htm
 AddDefaultCharset UTF-8
 
 <IfModule mod_headers.c>
   Header always unset Content-Disposition
   Header always set X-Content-Type-Options "nosniff"
-</IfModule>
-
-# === Ensure PHP is handled by the PHP handler ===
-<IfModule mod_php.c>
-  AddType application/x-httpd-php .php
-</IfModule>
-<IfModule !mod_php.c>
-  <IfModule mod_proxy_fcgi.c>
-    <FilesMatch "\.php$">
-      SetHandler "proxy:unix:/run/php/php-fpm.sock|fcgi://localhost"
-    </FilesMatch>
-  </IfModule>
 </IfModule>
 
 # === Canonical gallery routes (clean URL) ===
