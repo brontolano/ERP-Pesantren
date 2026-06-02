@@ -1,3 +1,6 @@
 [submodule "asy-syifaa-api"]
 	path = asy-syifaa-api
 	url = https://github.com/brontolano/asy-syifaa-datamaster.git
+[submodule "asy-syifaa-website"]
+	path = asy-syifaa-website
+	url = https://github.com/brontolano/asy-syifaa-website.git
