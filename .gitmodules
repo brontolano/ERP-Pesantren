@@ -4,3 +4,6 @@
 [submodule "asy-syifaa-website"]
 	path = asy-syifaa-website
 	url = https://github.com/brontolano/asy-syifaa-website.git
+[submodule "asy-syifaa-erp"]
+	path = asy-syifaa-erp
+	url = https://github.com/brontolano/asy-syifaa
