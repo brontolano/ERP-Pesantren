@@ -163,6 +163,11 @@ jobs:
               echo "::warning::nginx.conf not in deploy, skipping"
             fi
 
+            if ! grep -Fq 'try_files $uri $uri/ /router.php?$query_string;' "$NGINX_CONF"; then
+              echo "::error::Nginx fallback must target router.php for clean URL routing"
+              exit 1
+            fi
+
             ln -sf "$NGINX_CONF" /etc/nginx/sites-enabled/asy-syifaa-website 2>/dev/null || true
             nginx -t 2>&1
             systemctl reload nginx 2>/dev/null || nginx -s reload 2>/dev/null || service nginx reload
