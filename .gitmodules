@@ -7,3 +7,6 @@
 [submodule "asy-syifaa-erp"]
 	path = asy-syifaa-erp
 	url = https://github.com/brontolano/asy-syifaa
+[submodule "asy-syifaa-app"]
+	path = asy-syifaa-app
+	url = https://github.com/brontolano/app.asy-syifaa
